@@ -2,7 +2,7 @@
 layout: post
 title: Thinking about cholestasis
 categories: medicine
-tags: medicine
+tags: medicine, hide-strapline
 ---
 
 Some clinical nuggets to help in thinking about patients with deranged liver function tests in the so-called “obstructive” pattern.

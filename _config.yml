@@ -30,6 +30,8 @@ markdown: kramdown
 #theme: minima
 remote_theme: mixedjames/MixedJamesTheme1
 
+permalink: /:categories/:year/:title:output_ext
+
 plugins:
   - jekyll-remote-theme
 
