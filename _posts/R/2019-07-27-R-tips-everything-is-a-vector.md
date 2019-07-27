@@ -14,9 +14,17 @@ Everything is a vector
 
 : Even stuff that looks scalar is just using single-element vectors; operators produce vectors whose length is the length of the longest input; short vectors are extended by repitition
 
+Most basic operations take the following form:
+
+: `resultVector <- aVector operand bVector`
+
+If you want a combining or summary result, you need to spell that out explicitly
+
+: *i.e. sum(a + b) or max(a + b) etc.*
+
 # The Long Version...
 
-Obviously this isn’t actually true - R has loads of data types including user-defined types. But the point is this:
+Obviously this isn’t actually true - not **everything** is a vector - R has loads of data types including user-defined types. But the point is this:
 
 **You get most from R when you remember that most operations act on a set/list/sequence of elements, even when they look scalar.**
 
@@ -66,7 +74,7 @@ sum(a <= 5)
 
 ## Thoughts on multiplying vectors...
 
-Multiplying vectors in R works slightly differently to how you might expect from a maths point of view.
+Multiplying vectors is worth a little extra thought - in R it works slightly differently to how you might expect from a maths point of view.
 
 Here’s a quick summary:
 
@@ -83,3 +91,4 @@ b <- 4:6
 | `a %*% b` | `[32]`      | There are two interpretations on what is going on here: (*although they’re both equivalent*):<br />1. Takes the dot product (*scalar product*) of two vectors<br />2. Treats `a` and `b` as matrices and multiplies them (implictly taking the first as a row-vector and the second as a column vector) |
 
 The **cross product** is notable for it’s absence - R doesn’t provide a default implementation of this so, if you need it, you have to define it yourself.
+
