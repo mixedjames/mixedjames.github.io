@@ -1,0 +1,12 @@
+# Word temporary files
+~$*
+~WRL*.tmp
+
+# macOS
+.DS_Store
+
+# Node
+node_modules/
+
+# Build state (hashes of inputs for incremental builds)
+.build-cache/
