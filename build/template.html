@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>$pagetitle$</title>
+$for(header-includes)$
+$header-includes$
+$endfor$
+</head>
+<body>
+<header>
+  <h1>$title$</h1>
+$if(subtitle)$
+  <p class="subtitle">$subtitle$</p>
+$endif$
+</header>
+<main>
+$body$
+</main>
+$for(include-after)$
+$include-after$
+$endfor$
+</body>
+</html>

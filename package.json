@@ -1,0 +1,8 @@
+{
+  "name": "mixedjames",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build/build.mjs"
+  }
+}

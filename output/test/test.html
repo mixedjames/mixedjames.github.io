@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>This is the page title</title>
+<style>
+.subtitle {
+  font-style: italic;
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>This is the page title</h1>
+  <p class="subtitle">This is a subtitle</p>
+</header>
+<main>
+<p>And now some simple text. We include <strong>bold</strong>, <u>underlined</u>, <em>italic</em>, <sub>subscript</sub>, <sup>superscript</sup>, and <del>strike-through</del>.</p>
+<div data-custom-style="My fancy para style">
+<p>Now for some more text and this text has a custom paragraph style and has a run of a custom <span data-custom-style="My fancy character style">character style</span>.</p>
+</div>
+<section id="tables" class="level1">
+<h1>Tables</h1>
+<p>We also need to support tables…</p>
+<table style="width:100%;" data-custom-style="TableGrid">
+<caption><div data-custom-style="caption">
+<p>My little table</p>
+</div></caption>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Column 1</th>
+<th>Column 2</th>
+<th>Column 3</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>The</td>
+<td>First</td>
+<td>Row</td>
+</tr>
+<tr>
+<td>The</td>
+<td>Second</td>
+<td>Row</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="images" class="level1 heading1-marker-1">
+<h1 class="heading1-marker-1">Images</h1>
+<p>This is a PNG<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> file…</p>
+<p><img src="./media/image1.png" style="width:5.55556in;height:4.16667in" /></p>
+<p>And this is an SVG<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> file…</p>
+<figure>
+<img src="./media/image3.svg" style="width:6.26806in;height:1.79792in" />
+<figcaption><div data-custom-style="caption">
+<p>- A caption</p>
+</div></figcaption>
+</figure>
+<p>And now some equations…</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>E</mi><mo>=</mo><mi>m</mi><msup><mi>c</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">E = mc^{2}</annotation></semantics></math></p>
+<p>And now some other stuff…</p>
+<ol type="1">
+<li><div data-custom-style="List Paragraph">
+<p>A numbered list</p>
+</div></li>
+<li><div data-custom-style="List Paragraph">
+<p>A second item</p>
+</div>
+<ol type="a">
+<li><div data-custom-style="List Paragraph">
+<p>A sublist</p>
+</div></li>
+</ol></li>
+</ol>
+<p>Similarly…</p>
+<ul>
+<li><div data-custom-style="List Paragraph">
+<p>A bullet list</p>
+</div></li>
+<li><div data-custom-style="List Paragraph">
+<p>Two</p>
+</div></li>
+</ul>
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><div data-custom-style="footnote text">
+<p><span data-custom-style="footnote reference"></span> And this is a footnote</p>
+</div>
+<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></li>
+<li id="fn2"><div data-custom-style="endnote text">
+<p><span data-custom-style="endnote reference"></span> This is an endnote!</p>
+</div>
+<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></li>
+</ol>
+</section>
+</main>
+<script>
+document.documentElement.dataset.pageScript = "loaded";
+</script>
+</body>
+</html>
