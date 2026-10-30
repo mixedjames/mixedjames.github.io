@@ -78,6 +78,12 @@ We will need to support:
 Explicit colours are deliberately not supported, and Pandoc drops them silently. Authors should
 use a named Word style instead and give it a colour in the page's stylesheet.
 
+Footnotes and endnotes both render as sidenotes: in the margin on wide screens and
+tap-to-expand on narrow ones.
+
+The site-wide stylesheet (`build/site.css`) is inlined into every page, ahead of the page's own
+stylesheet. Fonts are system fonts, so there are no font files to host.
+
 Custom Word styles become CSS classes so that page stylesheets and scripts can address them.
 Custom heading styles must be based on a built-in heading style.
 

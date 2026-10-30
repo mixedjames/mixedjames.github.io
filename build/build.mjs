@@ -12,6 +12,7 @@ const contentDir = path.join(root, "content");
 const outputDir = path.join(root, "output");
 const template = path.join(root, "build", "template.html");
 const filter = path.join(root, "build", "word.lua");
+const siteStyle = path.join(root, "build", "site.css");
 
 async function findPageConfigs(dir) {
   const entries = await readdir(dir, { withFileTypes: true });
@@ -53,17 +54,18 @@ async function buildPage(dir) {
       `--lua-filter=${filter}`,
       "--mathml",
       "--section-divs",
+      "--shift-heading-level-by=1", // The docx Title is the page's only <h1>.
       "--wrap=none",
       "--extract-media=.",
       `--output=${config.output}`,
     ];
 
-    if (config.style) {
-      const css = await readFile(path.join(dir, config.style), "utf8");
-      const file = path.join(includes, "style.html");
-      await writeFile(file, `<style>\n${css}</style>\n`);
-      args.push(`--include-in-header=${file}`);
-    }
+    // Page styles come last so that they can override the site's.
+    const css = [await readFile(siteStyle, "utf8")];
+    if (config.style) css.push(await readFile(path.join(dir, config.style), "utf8"));
+    const styleFile = path.join(includes, "style.html");
+    await writeFile(styleFile, `<style>\n${css.join("\n")}</style>\n`);
+    args.push(`--include-in-header=${styleFile}`);
 
     if (config.script) {
       const js = await readFile(path.join(dir, config.script), "utf8");

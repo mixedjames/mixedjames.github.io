@@ -76,15 +76,26 @@ local function drop_leading_space(inlines)
   end
 end
 
+local notes = 0
+
 local Notes = {}
 
--- Removing Word's note marker leaves a stray space at the start of the note.
+-- Word footnotes and endnotes both become sidenotes. The checkbox lets them expand
+-- on narrow screens without any JavaScript.
 function Notes.Note(el)
-  local first = el.content[1]
-  if first and first.content then
-    drop_leading_space(first.content)
-  end
-  return el
+  notes = notes + 1
+  local id = "sn-" .. notes
+  local body = pandoc.utils.blocks_to_inlines(el.content, { pandoc.LineBreak() })
+  -- Removing Word's note marker leaves a stray space at the start of the note.
+  drop_leading_space(body)
+  return {
+    pandoc.RawInline("html", string.format(
+      '<input type="checkbox" id="%s" class="sidenote-toggle">'
+        .. '<label for="%s" class="sidenote-number">%d</label>',
+      id, id, notes
+    )),
+    pandoc.Span(body, { class = "sidenote" }),
+  }
 end
 
 -- Pandoc removes Word's "Figure 1" label, but keeps any separator typed after it.
@@ -109,7 +120,7 @@ local function numbered_caption(name, number, caption)
   drop_leading_separator(first.content)
   first.content:insert(1, pandoc.Space())
   first.content:insert(1, pandoc.Span(
-    { pandoc.Str(name .. "\u{a0}" .. number .. ".") },
+    { pandoc.Str(name), pandoc.Space(), pandoc.Str(number .. ".") },
     { class = "caption-label" }
   ))
   return true

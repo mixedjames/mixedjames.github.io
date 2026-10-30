@@ -5,8 +5,307 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>This is the page title</title>
 <style>
-.subtitle {
+/* Shared by every page and inlined ahead of the page's own stylesheet.
+   Avoid overflow: hidden on ancestors of page content: it breaks position: sticky,
+   which the scroll-driven work will rely on. */
+
+:root {
+  --measure: 36rem;
+  --margin-note: 15rem;
+  --margin-gap: 2rem;
+  --gutter: 1rem;
+
+  --paper: #fffff8;
+  --ink: #1d1d1b;
+  --muted: #5f5e58;
+  --rule: #cfcdbf;
+
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #181816;
+    --ink: #e6e4da;
+    --muted: #a5a399;
+    --rule: #45443e;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 112.5%;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 2rem var(--gutter) 4rem;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: Charter, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  line-height: 1.55;
+  overflow-wrap: break-word;
+}
+
+header,
+main {
+  max-width: var(--measure);
+  margin-inline: auto;
+}
+
+/* Headings */
+
+h1,
+h2,
+h3,
+h4 {
+  font-weight: 400;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+h1 {
+  margin: 0;
+  font-size: 2.2rem;
+}
+
+h2 {
+  margin: 2.5rem 0 0.75rem;
+  font-size: 1.5rem;
+}
+
+h3 {
+  margin: 2rem 0 0.5rem;
+  font-size: 1.2rem;
   font-style: italic;
+}
+
+h4 {
+  margin: 1.5rem 0 0.25rem;
+  font-size: 1rem;
+  font-style: italic;
+}
+
+.subtitle {
+  margin: 0.5rem 0 2rem;
+  color: var(--muted);
+  font-size: 1.2rem;
+  font-style: italic;
+}
+
+/* Text */
+
+p {
+  margin: 0 0 1rem;
+  text-wrap: pretty;
+}
+
+a {
+  color: inherit;
+  text-underline-offset: 0.15em;
+}
+
+ol,
+ul {
+  margin: 0 0 1rem;
+  padding-left: 1.5rem;
+}
+
+li > p {
+  margin-bottom: 0.25rem;
+}
+
+mark {
+  background: color-mix(in srgb, #e8c547 45%, transparent);
+  color: inherit;
+}
+
+/* Figures and tables */
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Word images often have transparent backgrounds and dark artwork. */
+@media (prefers-color-scheme: dark) {
+  img {
+    background: #fff;
+    border-radius: 2px;
+  }
+}
+
+figure {
+  margin: 1.5rem 0;
+}
+
+figure img {
+  display: block;
+}
+
+figcaption,
+caption {
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.35;
+  text-align: left;
+}
+
+figcaption {
+  margin-top: 0.5rem;
+}
+
+caption {
+  padding-bottom: 0.5rem;
+}
+
+figcaption p,
+caption p {
+  margin: 0;
+}
+
+.caption-label {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.table-scroll {
+  position: relative; /* Contains the absolutely positioned sidenote toggles. */
+  margin: 1.5rem 0;
+  overflow-x: auto;
+}
+
+table {
+  border-collapse: collapse;
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+  font-size: 0.9rem;
+  line-height: 1.35;
+  font-variant-numeric: tabular-nums;
+  hyphens: manual;
+}
+
+th,
+td {
+  min-width: 5rem;
+  padding: 0.35rem 1rem 0.35rem 0;
+  text-align: left;
+  vertical-align: top;
+}
+
+th:last-child,
+td:last-child {
+  padding-right: 0;
+}
+
+th {
+  border-bottom: 1px solid var(--rule);
+  font-weight: 600;
+}
+
+/* Equations */
+
+math {
+  font-family: "STIX Two Math", "Cambria Math", math;
+}
+
+.equation-scroll {
+  margin: 1rem 0;
+  overflow-x: auto;
+}
+
+.equation-scroll p {
+  margin: 0;
+}
+
+/* Sidenotes: tap the number to expand on narrow screens, in the margin on wide ones */
+
+.sidenote-toggle {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.sidenote-number {
+  padding: 0 0.15em;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.75em;
+  line-height: 0;
+  vertical-align: super;
+}
+
+.sidenote-toggle:focus-visible + .sidenote-number {
+  outline: 2px solid currentColor;
+}
+
+.sidenote {
+  display: none;
+  margin: 0.5rem 0;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--rule);
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.35;
+  text-align: left;
+}
+
+.sidenote-toggle:checked + .sidenote-number + .sidenote {
+  display: block;
+}
+
+@media (min-width: 66em) {
+  body {
+    padding-right: calc(var(--gutter) + var(--margin-gap) + var(--margin-note));
+  }
+
+  /* Anything inside a scroll container would be clipped, so it stays tap-to-expand. */
+  .sidenote-toggle:not(.table-scroll *) {
+    display: none;
+  }
+
+  .sidenote-number:not(.table-scroll *) {
+    cursor: default;
+  }
+
+  .sidenote:not(.table-scroll *) {
+    display: block;
+    float: right;
+    clear: right;
+    width: var(--margin-note);
+    margin: 0.2rem calc(-1 * (var(--margin-note) + var(--margin-gap))) 0.75rem 0;
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+
+@media (max-width: 30em) {
+  body {
+    hyphens: auto;
+  }
+
+  h1 {
+    font-size: 1.9rem;
+  }
+}
+
+.my-fancy-para-style {
+  padding-left: 0.75rem;
+  border-left: 3px solid #b5482f;
+}
+
+.my-fancy-character-style {
+  color: #b5482f;
 }
 </style>
 </head>
@@ -20,12 +319,12 @@
 <div class="my-fancy-para-style">
 <p>Now for some more text and this text has a custom paragraph style and has a run of a custom <span class="my-fancy-character-style">character style</span>.</p>
 </div>
-<section id="tables" class="level1">
-<h1>Tables</h1>
+<section id="tables" class="level2">
+<h2>Tables</h2>
 <p>We also need to support tables…</p>
 <div class="table-scroll">
 <table>
-<caption><p><span class="caption-label">Table 1.</span> My little table</p></caption>
+<caption><p><span class="caption-label">Table 1.</span> My little table</p></caption>
 <thead>
 <tr>
 <th>Column 1</th>
@@ -48,14 +347,14 @@
 </table>
 </div>
 </section>
-<section id="images" class="level1 heading1-marker-1">
-<h1 class="heading1-marker-1">Images</h1>
-<p>This is a PNG<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> file…</p>
+<section id="images" class="level2 heading1-marker-1">
+<h2 class="heading1-marker-1">Images</h2>
+<p>This is a PNG<input type="checkbox" id="sn-1" class="sidenote-toggle"><label for="sn-1" class="sidenote-number">1</label><span class="sidenote">And this is a footnote</span> file…</p>
 <p><img src="./media/image1.png" /></p>
-<p>And this is an SVG<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> file…</p>
+<p>And this is an SVG<input type="checkbox" id="sn-2" class="sidenote-toggle"><label for="sn-2" class="sidenote-number">2</label><span class="sidenote">This is an endnote!</span> file…</p>
 <figure>
 <img src="./media/image3.svg" />
-<figcaption><p><span class="caption-label">Figure 1.</span> A caption</p></figcaption>
+<figcaption><p><span class="caption-label">Figure 1.</span> A caption</p></figcaption>
 </figure>
 <p>And now some equations…</p>
 <div class="equation-scroll">
@@ -74,13 +373,6 @@
 <li><p>A bullet list</p></li>
 <li><p>Two</p></li>
 </ul>
-</section>
-<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
-<hr />
-<ol>
-<li id="fn1"><p>And this is a footnote<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn2"><p>This is an endnote!<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-</ol>
 </section>
 </main>
 <script>
