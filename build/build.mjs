@@ -11,6 +11,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const contentDir = path.join(root, "content");
 const outputDir = path.join(root, "output");
 const template = path.join(root, "build", "template.html");
+const filter = path.join(root, "build", "word.lua");
 
 async function findPageConfigs(dir) {
   const entries = await readdir(dir, { withFileTypes: true });
@@ -49,6 +50,7 @@ async function buildPage(dir) {
       "--to=html5",
       "--standalone",
       `--template=${template}`,
+      `--lua-filter=${filter}`,
       "--mathml",
       "--section-divs",
       "--wrap=none",
