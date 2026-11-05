@@ -1,0 +1,456 @@
+/* Shared by every page. Pages link to this file, then add their own styles inline after it.
+   Avoid overflow: hidden on ancestors of page content: it breaks position: sticky,
+   which the scroll-driven work will rely on. */
+
+/* Fonts
+
+   Hosted in fonts/, downloaded from Google Fonts, licensed under the SIL Open Font License
+   (see the OFL-*.txt files). Each family is a variable font split into Latin, extended Latin
+   and Greek subsets; a browser downloads only the subsets a page actually uses. */
+
+/* EB Garamond, italic, greek */
+@font-face {
+  font-family: "EB Garamond";
+  font-style: italic;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("fonts/EBGaramond-italic-greek.woff2") format("woff2");
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+
+/* EB Garamond, italic, latin-ext */
+@font-face {
+  font-family: "EB Garamond";
+  font-style: italic;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("fonts/EBGaramond-italic-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* EB Garamond, italic, latin */
+@font-face {
+  font-family: "EB Garamond";
+  font-style: italic;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("fonts/EBGaramond-italic-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* EB Garamond, normal, greek */
+@font-face {
+  font-family: "EB Garamond";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("fonts/EBGaramond-normal-greek.woff2") format("woff2");
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+
+/* EB Garamond, normal, latin-ext */
+@font-face {
+  font-family: "EB Garamond";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("fonts/EBGaramond-normal-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* EB Garamond, normal, latin */
+@font-face {
+  font-family: "EB Garamond";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("fonts/EBGaramond-normal-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Open Sans, normal, greek */
+@font-face {
+  font-family: "Open Sans";
+  font-style: normal;
+  font-weight: 300 800;
+  font-display: swap;
+  src: url("fonts/OpenSans-normal-greek.woff2") format("woff2");
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+
+/* Open Sans, normal, latin-ext */
+@font-face {
+  font-family: "Open Sans";
+  font-style: normal;
+  font-weight: 300 800;
+  font-display: swap;
+  src: url("fonts/OpenSans-normal-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* Open Sans, normal, latin */
+@font-face {
+  font-family: "Open Sans";
+  font-style: normal;
+  font-weight: 300 800;
+  font-display: swap;
+  src: url("fonts/OpenSans-normal-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Layout and colour
+
+   The design is dark only for now. Every colour is a token here, so a light theme can be
+   added later by redefining them; the light set below is a starting point, unused so far. */
+
+:root {
+  --measure: 33rem;
+  --margin-note: 15rem;
+  --margin-gap: 2rem;
+  --gutter: 1rem;
+
+  --paper: #161512;
+  --ink: #e6e1d3;
+  --muted: #a29d8f;
+  --rule: #3e3b34;
+  --image-panel: #fff; /* Word images are often dark artwork on a transparent background. */
+
+  --serif: "EB Garamond", Garamond, Georgia, serif;
+  --sans: "Open Sans", "Helvetica Neue", Arial, sans-serif;
+
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --paper: #fffff8;
+  --ink: #1d1d1b;
+  --muted: #5f5e58;
+  --rule: #cfcdbf;
+  --image-panel: transparent;
+
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* EB Garamond has small lower-case letters for its size, so the base size is larger than
+   usual to keep it readable on phones. */
+html {
+  font-size: 125%;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--serif);
+  line-height: 1.5;
+  overflow-wrap: break-word;
+}
+
+/* <main> spans the full width, so that the title page (and later, full-width scenes) can
+   too. Everything else in it sits in a centred text column. */
+main {
+  padding-bottom: 4rem;
+}
+
+main > * {
+  box-sizing: content-box;
+  padding-inline: var(--gutter);
+}
+
+main > :not(.title-page) {
+  max-width: var(--measure);
+  margin-inline: auto;
+}
+
+/* Title page: the title, subtitle and everything before the first Heading 1. It fills at
+   least one screen, and grows if its content is taller. svh is the screen height with the
+   browser's toolbars showing, so the page doesn't jump as they hide; vh is the fallback. */
+
+.title-page {
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100svh;
+  /* The bottom padding keeps the content clear of the scroll cue. */
+  padding-top: 3rem;
+  padding-bottom: 5rem;
+}
+
+.title-page-content {
+  width: 100%;
+  max-width: var(--measure);
+  margin-inline: auto;
+}
+
+.title-page h1,
+.title-page .subtitle {
+  text-align: center;
+}
+
+.title-page-content > :last-child {
+  margin-bottom: 0;
+}
+
+.scroll-cue {
+  position: absolute;
+  right: var(--gutter);
+  bottom: 1.25rem;
+  width: 2rem;
+  height: 2rem;
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Headings */
+
+h1,
+h2,
+h3,
+h4 {
+  font-weight: 400;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+h1 {
+  margin: 0;
+  font-size: 2.6rem;
+  line-height: 1.1;
+}
+
+h2 {
+  margin: 2.5rem 0 0.75rem;
+  font-size: 1.5rem;
+}
+
+h3 {
+  margin: 2rem 0 0.5rem;
+  font-size: 1.2rem;
+  font-style: italic;
+}
+
+h4 {
+  margin: 1.5rem 0 0.25rem;
+  font-size: 1rem;
+  font-style: italic;
+}
+
+/* Open Sans is much larger than EB Garamond at the same size, hence the smaller size. */
+.subtitle {
+  margin: 1rem 0 2.5rem;
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+/* Text */
+
+p {
+  margin: 0 0 1rem;
+  text-wrap: pretty;
+}
+
+a {
+  color: inherit;
+  text-underline-offset: 0.15em;
+}
+
+ol,
+ul {
+  margin: 0 0 1rem;
+  padding-left: 1.5rem;
+}
+
+li > p {
+  margin-bottom: 0.25rem;
+}
+
+mark {
+  background: color-mix(in srgb, #e8c547 45%, transparent);
+  color: inherit;
+}
+
+/* Figures and tables */
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+img {
+  background: var(--image-panel);
+  border-radius: 2px;
+}
+
+figure {
+  margin: 1.5rem 0;
+}
+
+figure img {
+  display: block;
+}
+
+figcaption,
+caption {
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.35;
+  text-align: left;
+}
+
+figcaption {
+  margin-top: 0.5rem;
+}
+
+caption {
+  padding-bottom: 0.5rem;
+}
+
+figcaption p,
+caption p {
+  margin: 0;
+}
+
+.caption-label {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.table-scroll {
+  position: relative; /* Contains the absolutely positioned sidenote toggles. */
+  margin: 1.5rem 0;
+  overflow-x: auto;
+}
+
+table {
+  border-collapse: collapse;
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+  font-size: 0.9rem;
+  line-height: 1.35;
+  font-variant-numeric: tabular-nums;
+  hyphens: manual;
+}
+
+th,
+td {
+  min-width: 5rem;
+  padding: 0.35rem 1rem 0.35rem 0;
+  text-align: left;
+  vertical-align: top;
+}
+
+th:last-child,
+td:last-child {
+  padding-right: 0;
+}
+
+th {
+  border-bottom: 1px solid var(--rule);
+  font-weight: 600;
+}
+
+/* Equations */
+
+math {
+  font-family: "STIX Two Math", "Cambria Math", math;
+}
+
+.equation-scroll {
+  margin: 1rem 0;
+  overflow-x: auto;
+}
+
+.equation-scroll p {
+  margin: 0;
+}
+
+/* Sidenotes: tap the number to expand on narrow screens, in the margin on wide ones */
+
+.sidenote-toggle {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.sidenote-number {
+  padding: 0 0.15em;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.75em;
+  line-height: 0;
+  vertical-align: super;
+}
+
+.sidenote-toggle:focus-visible + .sidenote-number {
+  outline: 2px solid currentColor;
+}
+
+.sidenote {
+  display: none;
+  margin: 0.5rem 0;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--rule);
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.35;
+  text-align: left;
+}
+
+.sidenote-toggle:checked + .sidenote-number + .sidenote {
+  display: block;
+}
+
+@media (min-width: 66em) {
+  /* Room on the right of the text column for the notes. */
+  main > * {
+    padding-right: calc(var(--gutter) + var(--margin-gap) + var(--margin-note));
+  }
+
+  /* Anything inside a scroll container would be clipped, so it stays tap-to-expand. */
+  .sidenote-toggle:not(.table-scroll *) {
+    display: none;
+  }
+
+  .sidenote-number:not(.table-scroll *) {
+    cursor: default;
+  }
+
+  .sidenote:not(.table-scroll *) {
+    display: block;
+    float: right;
+    clear: right;
+    width: var(--margin-note);
+    margin: 0.2rem calc(-1 * (var(--margin-note) + var(--margin-gap))) 0.75rem 0;
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+
+@media (max-width: 30em) {
+  body {
+    hyphens: auto;
+  }
+
+  h1 {
+    font-size: 2.2rem;
+  }
+}

@@ -4,18 +4,28 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>$pagetitle$</title>
+  <link rel="stylesheet" href="$siteroot$site/site.css">
 $for(header-includes)$
 $header-includes$
 $endfor$
 </head>
 <body>
-<header>
-  <h1>$title$</h1>
-$if(subtitle)$
-  <p class="subtitle">$subtitle$</p>
-$endif$
-</header>
 <main>
+<!-- The title page fills at least one screen. Its content block is centred within it. -->
+<section class="title-page">
+<div class="title-page-content">
+$if(title)$
+<h1>$title$</h1>
+$endif$
+$if(subtitle)$
+<p class="subtitle">$subtitle$</p>
+$endif$
+$titlepage$
+</div>
+$if(more)$
+<svg class="scroll-cue" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9l7 7 7-7"/></svg>
+$endif$
+</section>
 $body$
 </main>
 $for(include-after)$

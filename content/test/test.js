@@ -1,1 +1,1 @@
-document.documentElement.dataset.pageScript = "loaded";
+console.log("Hello, World!");

@@ -81,8 +81,10 @@ use a named Word style instead and give it a colour in the page's stylesheet.
 Footnotes and endnotes both render as sidenotes: in the margin on wide screens and
 tap-to-expand on narrow ones.
 
-The site-wide stylesheet (`build/site.css`) is inlined into every page, ahead of the page's own
-stylesheet. Fonts are system fonts, so there are no font files to host.
+Files shared by every page live in `build/site/` and are copied as-is to `output/site/`. Each
+page links to the site-wide stylesheet (`site/site.css`) by a relative path, ahead of its own
+inline stylesheet. The fonts are EB Garamond (primary) and Open Sans (paired sans-serif),
+hosted locally in `site/fonts/` rather than loaded from Google.
 
 Custom Word styles become CSS classes so that page stylesheets and scripts can address them.
 Custom heading styles must be based on a built-in heading style.

@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -12,7 +12,9 @@ const contentDir = path.join(root, "content");
 const outputDir = path.join(root, "output");
 const template = path.join(root, "build", "template.html");
 const filter = path.join(root, "build", "word.lua");
-const siteStyle = path.join(root, "build", "site.css");
+// Shared files (the site stylesheet and fonts), copied as-is to output/site/.
+const siteDir = path.join(root, "build", "site");
+const siteOutDir = path.join(outputDir, "site");
 
 async function findPageConfigs(dir) {
   const entries = await readdir(dir, { withFileTypes: true });
@@ -60,12 +62,18 @@ async function buildPage(dir) {
       `--output=${config.output}`,
     ];
 
-    // Page styles come last so that they can override the site's.
-    const css = [await readFile(siteStyle, "utf8")];
-    if (config.style) css.push(await readFile(path.join(dir, config.style), "utf8"));
-    const styleFile = path.join(includes, "style.html");
-    await writeFile(styleFile, `<style>\n${css.join("\n")}</style>\n`);
-    args.push(`--include-in-header=${styleFile}`);
+    // The path from this page back to the output root, such as "../", for linking to the
+    // shared files. Always uses forward slashes, as URLs do.
+    const toRoot = path.relative(outDir, outputDir).split(path.sep).join("/");
+    args.push(`--variable=siteroot:${toRoot ? `${toRoot}/` : ""}`);
+
+    // The template links the site stylesheet first, so page styles can override it.
+    if (config.style) {
+      const css = await readFile(path.join(dir, config.style), "utf8");
+      const file = path.join(includes, "style.html");
+      await writeFile(file, `<style>\n${css}</style>\n`);
+      args.push(`--include-in-header=${file}`);
+    }
 
     if (config.script) {
       const js = await readFile(path.join(dir, config.script), "utf8");
@@ -85,6 +93,21 @@ async function buildPage(dir) {
   console.log(`built ${path.relative(root, path.join(outDir, config.output))}`);
 }
 
-for (const dir of await findPageConfigs(contentDir)) {
+const pageDirs = await findPageConfigs(contentDir);
+
+// output/site/ belongs to the shared files, so no page may be written inside it.
+for (const dir of pageDirs) {
+  const rel = path.relative(contentDir, dir);
+  if (rel.split(path.sep)[0] === "site") {
+    throw new Error(`${path.join(dir, "index.json")}: content/site/ is reserved for shared files`);
+  }
+}
+
+// Replace rather than merge, so that files removed from build/site/ disappear from output.
+await rm(siteOutDir, { recursive: true, force: true });
+await cp(siteDir, siteOutDir, { recursive: true });
+console.log(`copied ${path.relative(root, siteOutDir)}/`);
+
+for (const dir of pageDirs) {
   await buildPage(dir);
 }

@@ -161,4 +161,30 @@ function Blocks.Para(el)
   end
 end
 
-return { Styles, Notes, Blocks }
+local TitlePage = {}
+
+-- Everything before the first top-level heading belongs on the title page. It moves into
+-- the "titlepage" metadata field, which the template places alongside the title and
+-- subtitle. "more" tells the template whether anything follows, for the scroll cue.
+--
+-- Word's Heading 1 is still level 1 here: --shift-heading-level-by is applied later,
+-- when the HTML is written. This pass runs last, so captions are already numbered and
+-- notes are already sidenotes.
+function TitlePage.Pandoc(doc)
+  if not doc.meta.title then
+    io.stderr:write("[WARNING] No Title: use Word's Title style for the page title\n")
+  end
+
+  local intro = pandoc.Blocks {}
+  while doc.blocks[1] and not (doc.blocks[1].t == "Header" and doc.blocks[1].level == 1) do
+    intro:insert(doc.blocks:remove(1))
+  end
+
+  if #intro > 0 then
+    doc.meta.titlepage = pandoc.MetaBlocks(intro)
+  end
+  doc.meta.more = #doc.blocks > 0
+  return doc
+end
+
+return { Styles, Notes, Blocks, TitlePage }
