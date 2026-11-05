@@ -140,7 +140,7 @@
 /* EB Garamond has small lower-case letters for its size, so the base size is larger than
    usual to keep it readable on phones. */
 html {
-  font-size: 125%;
+  font-size: 137.5%; /* 22px */
   -webkit-text-size-adjust: 100%;
 }
 
@@ -419,7 +419,9 @@ math {
   display: block;
 }
 
-@media (min-width: 66em) {
+/* The margin needs the column, gap, note and both gutters: 52rem, or 1144px at 22px.
+   Media queries can't use custom properties, so update this if those sizes change. */
+@media (min-width: 72em) {
   /* Room on the right of the text column for the notes. */
   main > * {
     padding-right: calc(var(--gutter) + var(--margin-gap) + var(--margin-note));
