@@ -113,6 +113,8 @@
   --ink: #e6e1d3;
   --muted: #a29d8f;
   --rule: #3e3b34;
+  --field: #24221e; /* Text box background, a little lighter than the paper. */
+  --field-border: var(--rule);
   --image-panel: #fff; /* Word images are often dark artwork on a transparent background. */
 
   --serif: "EB Garamond", Garamond, Georgia, serif;
@@ -126,6 +128,8 @@
   --ink: #1d1d1b;
   --muted: #5f5e58;
   --rule: #cfcdbf;
+  --field: #f4f2e6;
+  --field-border: var(--rule);
   --image-panel: transparent;
 
   color-scheme: light;
@@ -457,10 +461,7 @@ math {
   }
 }
 
-/* Home page
-
-   Only what the search view needs to work. How the list, the search box and the results look
-   is still to be decided. */
+/* Home page */
 
 /* Hidden on screen but still read by screen readers, such as the search box's label. */
 .visually-hidden {
@@ -472,9 +473,155 @@ math {
   white-space: nowrap;
 }
 
+/* The search box: rounded, with its text centred. The equal padding on both sides keeps the
+   text centred even with the clear button on the right. */
+.search {
+  margin-top: 2.5rem;
+}
+
 .search input {
   width: 100%;
-  font: inherit;
+  padding: 0.55rem 2.5rem;
+  color: var(--ink);
+  background: var(--field);
+  border: 1px solid var(--field-border);
+  border-radius: 999px;
+  outline: 0;
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  text-align: center;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.search input:focus {
+  border-color: var(--muted);
+}
+
+.search input::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
+/* The browser's clear button, redrawn in the muted colour rather than the browser's white. */
+.search input::-webkit-search-cancel-button {
+  width: 0.9rem;
+  height: 0.9rem;
+  margin-right: -1.5rem;
+  background: var(--muted);
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 6l12 12M18 6L6 18' stroke='black' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* The list of lessons, and the search results, which use the same markup. On phones, each entry
+   is centred like a small title page, with short centred rules between them. On wider screens,
+   entries are left-aligned between full-width rules. */
+.lessons h2,
+.search-status {
+  margin: 0 0 1rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+.lessons h2 {
+  font-size: 0.8rem;
+  font-variant: all-small-caps;
+  letter-spacing: 0.15em;
+}
+
+.search-status {
+  font-family: var(--sans);
+  font-size: 0.75rem;
+}
+
+.page-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-align: center;
+}
+
+.page-list li + li::before {
+  content: "";
+  display: block;
+  width: 3rem;
+  margin: 0 auto;
+  border-top: 1px solid var(--rule);
+}
+
+.page-list a {
+  display: block;
+  padding: 1.25rem 0;
+  text-decoration: none;
+}
+
+.page-list a:hover .page-list-title,
+.page-list a:focus-visible .page-list-title {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+}
+
+.page-list a:focus-visible {
+  outline: 1px solid var(--muted);
+  outline-offset: -1px;
+}
+
+.page-list-title {
+  margin: 0;
+  font-size: 1.35rem;
+  font-style: normal;
+}
+
+.page-list-subtitle {
+  margin: 0.3rem 0 0;
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.page-list time {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-variant: all-small-caps;
+  letter-spacing: 0.06em;
+}
+
+@media (min-width: 48em) {
+  .lessons h2,
+  .search-status,
+  .page-list {
+    text-align: left;
+  }
+
+  .lessons h2,
+  .search-status {
+    margin-bottom: 0.5rem;
+  }
+
+  .page-list {
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .page-list li {
+    border-top: 1px solid var(--rule);
+  }
+
+  .page-list li + li::before {
+    content: none;
+  }
+
+  .page-list a {
+    padding: 1rem 0;
+  }
+
+  .page-list-title {
+    font-size: 1.3rem;
+  }
 }
 
 /* The search view, while there is text in the search box: the title page shrinks to the title,
@@ -482,7 +629,20 @@ math {
 .home.searching .title-page {
   min-height: 0;
   justify-content: flex-start;
+  padding-top: 2rem;
   padding-bottom: 1rem;
+}
+
+.home.searching .title-page h1 {
+  font-size: 1.8rem;
+}
+
+.home.searching .subtitle {
+  margin-bottom: 0;
+}
+
+.home.searching .search {
+  margin-top: 1.5rem;
 }
 
 .home.searching .title-page-content > :not(h1, .subtitle, .search),
