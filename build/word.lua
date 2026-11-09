@@ -76,26 +76,30 @@ local function drop_leading_space(inlines)
   end
 end
 
+-- Footnotes and endnotes aren't supported yet: they are left as Pandoc's plain notes, listed at
+-- the end of the page, and the build warns. Sidenotes were removed in November 2026, to be
+-- redesigned later; the old version is in git history (commit 36eacb8).
 local notes = 0
 
 local Notes = {}
 
--- Word footnotes and endnotes both become sidenotes. The checkbox lets them expand
--- on narrow screens without any JavaScript.
 function Notes.Note(el)
   notes = notes + 1
-  local id = "sn-" .. notes
-  local body = pandoc.utils.blocks_to_inlines(el.content, { pandoc.LineBreak() })
   -- Removing Word's note marker leaves a stray space at the start of the note.
-  drop_leading_space(body)
-  return {
-    pandoc.RawInline("html", string.format(
-      '<input type="checkbox" id="%s" class="sidenote-toggle">'
-        .. '<label for="%s" class="sidenote-number">%d</label>',
-      id, id, notes
-    )),
-    pandoc.Span(body, { class = "sidenote" }),
-  }
+  local first = el.content[1]
+  if first and first.content then
+    drop_leading_space(first.content)
+  end
+  return el
+end
+
+function Notes.Pandoc(doc)
+  if notes > 0 then
+    io.stderr:write(string.format(
+      "[WARNING] %d footnote(s) or endnote(s): not supported yet, so listed plainly at the end\n",
+      notes
+    ))
+  end
 end
 
 -- Pandoc removes Word's "Figure 1" label, but keeps any separator typed after it.
@@ -168,8 +172,7 @@ local TitlePage = {}
 -- subtitle. "more" tells the template whether anything follows, for the scroll cue.
 --
 -- Word's Heading 1 is still level 1 here: --shift-heading-level-by is applied later,
--- when the HTML is written. This pass runs last, so captions are already numbered and
--- notes are already sidenotes.
+-- when the HTML is written. This pass runs last, so captions are already numbered.
 function TitlePage.Pandoc(doc)
   if not doc.meta.title then
     io.stderr:write("[WARNING] No Title: use Word's Title style for the page title\n")

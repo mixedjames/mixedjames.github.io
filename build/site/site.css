@@ -105,8 +105,6 @@
 
 :root {
   --measure: 33rem;
-  --margin-note: 15rem;
-  --margin-gap: 2rem;
   --gutter: 1rem;
 
   --paper: #161512;
@@ -336,7 +334,6 @@ caption p {
 }
 
 .table-scroll {
-  position: relative; /* Contains the absolutely positioned sidenote toggles. */
   margin: 1.5rem 0;
   overflow-x: auto;
 }
@@ -384,71 +381,25 @@ math {
   margin: 0;
 }
 
-/* Sidenotes: tap the number to expand on narrow screens, in the margin on wide ones */
+/* Footnotes and endnotes
 
-.sidenote-toggle {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-}
+   Not supported yet: Pandoc lists them plainly at the end of the page. Sidenotes were removed
+   in November 2026, to be redesigned later. */
 
-.sidenote-number {
-  padding: 0 0.15em;
+.footnote-ref,
+.footnote-back {
   color: var(--muted);
-  cursor: pointer;
-  font-size: 0.75em;
-  line-height: 0;
-  vertical-align: super;
+  text-decoration: none;
 }
 
-.sidenote-toggle:focus-visible + .sidenote-number {
-  outline: 2px solid currentColor;
-}
-
-.sidenote {
-  display: none;
-  margin: 0.5rem 0;
-  padding-left: 0.75rem;
-  border-left: 2px solid var(--rule);
+.footnotes {
   color: var(--muted);
   font-size: 0.85rem;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 1.35;
-  text-align: left;
 }
 
-.sidenote-toggle:checked + .sidenote-number + .sidenote {
-  display: block;
-}
-
-/* The margin needs the column, gap, note and both gutters: 52rem, or 1144px at 22px.
-   Media queries can't use custom properties, so update this if those sizes change. */
-@media (min-width: 72em) {
-  /* Room on the right of the text column for the notes. */
-  main > * {
-    padding-right: calc(var(--gutter) + var(--margin-gap) + var(--margin-note));
-  }
-
-  /* Anything inside a scroll container would be clipped, so it stays tap-to-expand. */
-  .sidenote-toggle:not(.table-scroll *) {
-    display: none;
-  }
-
-  .sidenote-number:not(.table-scroll *) {
-    cursor: default;
-  }
-
-  .sidenote:not(.table-scroll *) {
-    display: block;
-    float: right;
-    clear: right;
-    width: var(--margin-note);
-    margin: 0.2rem calc(-1 * (var(--margin-note) + var(--margin-gap))) 0.75rem 0;
-    padding-left: 0;
-    border-left: 0;
-  }
+.footnotes hr {
+  border: 0;
+  border-top: 1px solid var(--rule);
 }
 
 @media (max-width: 30em) {

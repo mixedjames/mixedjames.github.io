@@ -96,8 +96,8 @@ still works.
   a named style instead and colour it in the page's stylesheet.
 - **Custom styles:** paragraph and character styles become CSS classes, so `My Key Point`
   becomes `.my-key-point`. A custom heading style must be based on a built-in heading style.
-- **Footnotes and endnotes:** both become sidenotes, shown in the margin on wide screens and
-  tap-to-expand on phones.
+- **Footnotes and endnotes:** not supported yet. They are listed plainly at the end of the
+  page, and the build warns. Sidenotes will be redesigned later.
 - **Captions:** use Word's Insert Caption. Figures and tables are numbered automatically.
 - **Images:** PNG, JPEG, GIF and SVG all work. Add alt text in Word, or the build warns.
 - **Equations:** use Word's equation editor.

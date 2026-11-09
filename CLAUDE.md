@@ -35,7 +35,7 @@ dependencies; keep it that way. Repeat builds must give byte-identical output.
 | Path | Role |
 |---|---|
 | `build/build.mjs` | Finds each `content/**/index.json`, runs Pandoc per page, copies `build/site/` to `output/site/`, passes the `siteroot` variable (such as `../`) to the template |
-| `build/word.lua` | Pandoc filter, in passes: `Styles` (Word styles become classes), `Notes` (sidenotes), `Blocks` (caption numbers, scroll wrappers), `TitlePage` (moves the intro into the `titlepage` metadata field) |
+| `build/word.lua` | Pandoc filter, in passes: `Styles` (Word styles become classes), `Notes` (counts notes and warns; they stay Pandoc's plain end-of-page notes), `Blocks` (caption numbers, scroll wrappers), `TitlePage` (moves the intro into the `titlepage` metadata field) |
 | `build/summary.lua` | Pandoc custom writer, run once more per page: title and subtitle as HTML and plain text, plus keywords from the docx Tags property via `pandoc.zip` |
 | `build/template.html` | Page structure, including the title page and scroll cue |
 | `build/home.html` | Home page structure: the same title page, then the list of pages from the `pages` variable |
@@ -77,6 +77,18 @@ These are agreed with the user:
     breaks is under consideration.
 - **Width:** `<main>` is full width. Its children are limited to the text column, which leaves
   room for full-width scenes later.
+- **Column:** centred at every width, on every page.
+- **Footnotes and endnotes:** unsupported for now. Sidenotes were removed because reserving
+  the margin pushed the column off centre. Pandoc's plain end-of-page notes remain, and the
+  build warns. The old sidenote filter and CSS are in commit `36eacb8`.
+- **Home page:**
+  - The title page holds the title, subtitle, description and a rounded search box with
+    centred text. The box has a fill slightly lighter than the paper (`--field`).
+  - The lessons list: up to 48em, entries are centred with short centred rules between them.
+    Above 48em, entries are left-aligned between full-width rules.
+  - Each entry shows an upright title, a muted Open Sans subtitle, and the date in small caps.
+  - Typing switches to the search view: the title shrinks, and the description, scroll cue
+    and list are hidden.
 - **Scrollytelling** comes later; make only passive provision for it now. Never put
   `overflow: hidden` on an ancestor of content, because it breaks `position: sticky`.
 
@@ -86,7 +98,6 @@ user:
 - heading sizes and italics;
 - captions;
 - table rules;
-- sidenote behaviour;
 - the white panel behind images;
 - hyphenation below 30em.
 
@@ -100,9 +111,6 @@ Open issues:
 - **Heading levels:** in the Lua filter, Word's Heading 1 is still level 1.
   `--shift-heading-level-by=1` is applied only when the HTML is written, which makes it `<h2>`.
   The docx Title is the only `<h1>`.
-- **Sidenote breakpoint:** the `72em` breakpoint is hard-coded, because media queries can't use
-  custom properties. Recalculate it if the base size, column, gap or note width changes:
-  column + gap + note + 2 gutters = 52rem, which is 1144px.
 - **No Open Sans italic:** only upright Open Sans is hosted. Italic Open Sans would be a slanted
   fake.
 - **Pandoc and Word:**
@@ -132,7 +140,7 @@ Open issues:
 ## Testing
 
 - Install Playwright in the session scratchpad, never in the repo, and use headless Chromium.
-- Check widths 360, 390, 768 and 1440px, plus 1100 and 1152px around the sidenote breakpoint.
+- Check widths 360, 390, 768 (the home list's 48em breakpoint), 1100, 1152 and 1440px.
 - On every page, check:
   - the page doesn't scroll sideways (`scrollWidth` equals the viewport width);
   - the fonts loaded (`document.fonts`) rather than the fallbacks;
@@ -153,8 +161,10 @@ Open issues:
      hashed per page.
    - Delete output from pages that have been removed or renamed.
    - Keep the cache in `.build-cache/`.
-3. **Watch mode:**
+3. **Footnotes and endnotes:** redesign sidenotes, or another treatment, without moving the
+   column off centre.
+4. **Watch mode:**
    - React only to `index.json` files and the files they name.
    - Debounce, because Word saves by replacing the file.
    - Ideally add a local server that reloads the page.
-4. **Later:** contents pages, then scroll-driven animation.
+5. **Later:** contents pages, then scroll-driven animation.

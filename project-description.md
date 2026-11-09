@@ -101,8 +101,10 @@ We will need to support:
 Explicit colours are deliberately not supported, and Pandoc drops them silently. Authors should
 use a named Word style instead and give it a colour in the page's stylesheet.
 
-Footnotes and endnotes both render as sidenotes: in the margin on wide screens and
-tap-to-expand on narrow ones.
+Footnotes and endnotes are not supported yet. They are listed plainly at the end of the page,
+and the build warns. The earlier sidenotes, in the margin on wide screens and tap-to-expand on
+phones, were removed in November 2026 because reserving the margin pushed the text column off
+centre. They will be redesigned later.
 
 Files shared by every page live in `build/site/` and are copied as-is to `output/site/`. Each
 page links to the site-wide stylesheet (`site/site.css`) by a relative path, ahead of its own
