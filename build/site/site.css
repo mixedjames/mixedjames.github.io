@@ -456,3 +456,37 @@ math {
     font-size: 2.2rem;
   }
 }
+
+/* Home page
+
+   Only what the search view needs to work. How the list, the search box and the results look
+   is still to be decided. */
+
+/* Hidden on screen but still read by screen readers, such as the search box's label. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.search input {
+  width: 100%;
+  font: inherit;
+}
+
+/* The search view, while there is text in the search box: the title page shrinks to the title,
+   subtitle and search box, and the results replace the list of lessons. */
+.home.searching .title-page {
+  min-height: 0;
+  justify-content: flex-start;
+  padding-bottom: 1rem;
+}
+
+.home.searching .title-page-content > :not(h1, .subtitle, .search),
+.home.searching .scroll-cue,
+.home.searching .lessons {
+  display: none;
+}

@@ -4,9 +4,60 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>MixedJames</title>
+  <link rel="stylesheet" href="site/site.css">
 </head>
 <body>
-  <h1>MixedJames</h1>
-  <p>Placeholder page. The deployment pipeline is working.</p>
+<main class="home">
+<!-- The title page is the same as on other pages: the title, subtitle and description from
+     home.docx, filling at least one screen. -->
+<section class="title-page">
+<div class="title-page-content">
+<h1>MixedJames</h1>
+<p class="subtitle">Short lessons in medicine</p>
+<p>Placeholder description. Replace this paragraph, and the title and subtitle, in content/home.docx.</p>
+<!-- search.js reveals the search box, so it stays hidden without JavaScript. Typing in it
+     switches the page to its search view. -->
+<form class="search" role="search" data-index="search.json" hidden>
+<label for="search-input" class="visually-hidden">Search lessons</label>
+<input id="search-input" type="search" placeholder="Search" autocomplete="off" spellcheck="false" enterkeyhint="search">
+</form>
+</div>
+<svg class="scroll-cue" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9l7 7 7-7"/></svg>
+</section>
+<!-- Every page, newest first. Each entry is one link, so the whole entry can be tapped. -->
+<section class="lessons">
+<h2>Lessons</h2>
+<ol class="page-list">
+<li>
+<a href="test/test.html">
+<h3 class="page-list-title">This is the page title</h3>
+<p class="page-list-subtitle">This is a subtitle</p>
+</a>
+</li>
+<li>
+<a href="non-inferiority-trials/non-inferiority-trials.html">
+<h3 class="page-list-title">What the Dickens is a non-inferiority trial</h3>
+<p class="page-list-subtitle">Another way to lie to yourself</p>
+</a>
+</li>
+</ol>
+</section>
+<!-- Search results, shown in place of the list of lessons. search.js fills them in. -->
+<section class="search-results" hidden>
+<p class="search-status" role="status"></p>
+<ol class="page-list"></ol>
+</section>
+<!-- One search result, copied by search.js. The same markup as the list of lessons. -->
+<template id="search-result">
+<li>
+<a>
+<h3 class="page-list-title"></h3>
+<p class="page-list-subtitle"></p>
+<time></time>
+</a>
+</li>
+</template>
+</main>
+<script type="module" src="site/search.js"></script>
 </body>
 </html>

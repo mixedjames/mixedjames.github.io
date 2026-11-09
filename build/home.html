@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+$-- The <head> is shared with template.html, in head.html.
+$head()$
+<body>
+<main class="home">
+<!-- The title page is the same as on other pages: the title, subtitle and description from
+     home.docx, filling at least one screen. -->
+<section class="title-page">
+<div class="title-page-content">
+$if(title)$
+<h1>$title$</h1>
+$endif$
+$if(subtitle)$
+<p class="subtitle">$subtitle$</p>
+$endif$
+$titlepage$
+<!-- search.js reveals the search box, so it stays hidden without JavaScript. Typing in it
+     switches the page to its search view. -->
+<form class="search" role="search" data-index="$siteroot$search.json" hidden>
+<label for="search-input" class="visually-hidden">Search lessons</label>
+<input id="search-input" type="search" placeholder="Search" autocomplete="off" spellcheck="false" enterkeyhint="search">
+</form>
+</div>
+$if(pages)$
+<svg class="scroll-cue" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9l7 7 7-7"/></svg>
+$endif$
+</section>
+$if(pages)$
+<!-- Every page, newest first. Each entry is one link, so the whole entry can be tapped. -->
+<section class="lessons">
+<h2>Lessons</h2>
+<ol class="page-list">
+$for(pages)$
+<li>
+<a href="$pages.href$">
+<h3 class="page-list-title">$pages.title$</h3>
+$if(pages.subtitle)$
+<p class="page-list-subtitle">$pages.subtitle$</p>
+$endif$
+$if(pages.dateText)$
+<time datetime="$pages.date$">$pages.dateText$</time>
+$endif$
+</a>
+</li>
+$endfor$
+</ol>
+</section>
+$endif$
+<!-- Search results, shown in place of the list of lessons. search.js fills them in. -->
+<section class="search-results" hidden>
+<p class="search-status" role="status"></p>
+<ol class="page-list"></ol>
+</section>
+<!-- One search result, copied by search.js. The same markup as the list of lessons. -->
+<template id="search-result">
+<li>
+<a>
+<h3 class="page-list-title"></h3>
+<p class="page-list-subtitle"></p>
+<time></time>
+</a>
+</li>
+</template>
+</main>
+<script type="module" src="$siteroot$site/search.js"></script>
+$for(include-after)$
+$include-after$
+$endfor$
+</body>
+</html>

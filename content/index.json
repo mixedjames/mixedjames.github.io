@@ -1,0 +1,5 @@
+{
+  "type": "home",
+  "source": "home.docx",
+  "output": "index.html"
+}

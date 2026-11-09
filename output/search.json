@@ -1,0 +1,24 @@
+[
+  {
+    "url": "test/test.html",
+    "date": "0000-01-01",
+    "dateText": "",
+    "title": "This is the page title",
+    "titleText": "This is the page title",
+    "subtitle": "This is a subtitle",
+    "subtitleText": "This is a subtitle",
+    "keywords": []
+  },
+  {
+    "url": "non-inferiority-trials/non-inferiority-trials.html",
+    "date": "0000-01-01",
+    "dateText": "",
+    "title": "What the Dickens is a non-inferiority trial",
+    "titleText": "What the Dickens is a non-inferiority trial",
+    "subtitle": "Another way to lie to yourself",
+    "subtitleText": "Another way to lie to yourself",
+    "keywords": [
+      "test trial-design"
+    ]
+  }
+]

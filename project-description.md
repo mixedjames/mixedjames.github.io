@@ -56,10 +56,33 @@ that ties the docx, css, js and output together:
 }
 ```
 
-- `type`, `source` and `output` are mandatory; `style` and `script` are optional.
+- `type`, `source` and `output` are mandatory; `style`, `script` and `date` are optional.
+- `date` is the date the page was written, as `YYYY-MM-DD`. Word's own created date isn't
+  used, because Pandoc doesn't read it and Save As carries it over. An undated page is given
+  the date `0000-01-01`, so it sorts last, and the build warns.
+- Unknown fields, missing files and invalid values stop the build before it writes anything.
 - `output` is a plain filename with no path separators. The page is written to the same relative
   path within `./output` as its directory has within `./content`.
-- `content/index.json` defines the home page, so its `output` must be `index.html`.
+- `content/index.json` defines the home page, so its `type` must be `"home"` and its `output`
+  must be `index.html`. It takes `source`, `style` and `script` like a page, but no `date`.
+
+## Home page
+
+The home page is written in Word as `home.docx`. Its title, subtitle and description form a
+title page, as on any other page, with a search box below them. Below the title page is a list
+of every page, newest first, showing each one's title, subtitle and date.
+
+Search runs in the browser using [Fuse.js](https://www.fusejs.io). It covers each page's
+title, subtitle and keywords, but not its body text or headings. Keywords come from the docx's
+Tags property (File > Info > Properties in Word). The build writes them, with the titles,
+subtitles and dates, to a separate search index, `output/search.json`, which the home page
+fetches the first time someone types. Each word of a query must match somewhere in a page, but
+different words may match different fields. Fuse.js is vendored, at a pinned version, in
+`build/site/vendor/`. The site must therefore be previewed through a web server, not by opening the files
+directly.
+
+Typing in the search box switches the home page to a search view; focusing it alone does not,
+because focus is easy to trigger by accident. Clearing the box returns to the home page.
 
 The page title and subtitle come from the docx `Title` and `Subtitle` styles.
 
@@ -117,3 +140,9 @@ In the future it would be nice to support:
 - Compiled scripts
 
 Although these are not v1 features we should make passive provision where appropriate.
+
+## Readable output
+
+Code that we write, and everything the build generates, stays readable by people: no
+minification, and JSON written with indentation and a fixed key order. Third-party libraries,
+such as Fuse.js, are the exception and are vendored as their authors ship them.
