@@ -2,7 +2,8 @@
 //
 // Typing in the search box, not just focusing it, switches the page to its search view: the
 // "searching" class on <main> hides the description and the list of lessons, and the results
-// appear instead. Clearing the box, or pressing Escape, switches back.
+// appear instead. Clearing the box, or pressing Escape, switches back. The query is kept in the
+// address, as ?q=.
 //
 // The index, search.json, is written by the build and fetched when someone first types. It
 // covers each page's title, subtitle and keywords.
@@ -108,7 +109,8 @@ function describe(count, query) {
 // Each update is numbered, so that a slow first load can't overwrite a later query's results.
 let latest = 0;
 
-async function update() {
+// Shows the home view or the search view, to match the text in the search box.
+async function show() {
   const run = ++latest;
   const query = input.value.trim();
   const searching = query !== "";
@@ -131,12 +133,49 @@ async function update() {
   }
 }
 
-input.addEventListener("input", update);
+// The query is kept in the address as ?q=, so that Back and Forward, reloading and shared links
+// all return to the same search.
+
+function queryInAddress() {
+  return new URL(location.href).searchParams.get("q") ?? "";
+}
+
+function addressFor(query) {
+  const url = new URL(location.href);
+  if (query) url.searchParams.set("q", query);
+  else url.searchParams.delete("q");
+  return url;
+}
+
+// Starting a search adds one history entry; typing more updates it rather than adding more.
+// Clearing a search started here goes back to the entry before it, so that Back doesn't then
+// show the home view twice. A search that arrived in the address, such as a shared link, is
+// cleared in place instead, because going back would leave the site.
+function recordQuery() {
+  const query = input.value.trim() === "" ? "" : input.value;
+  const inAddress = queryInAddress() !== "";
+
+  if (query && !inAddress) {
+    history.pushState({ startedHere: true }, "", addressFor(query));
+  } else if (query) {
+    history.replaceState(history.state, "", addressFor(query));
+  } else if (inAddress && history.state?.startedHere) {
+    history.back();
+  } else if (inAddress) {
+    history.replaceState(null, "", addressFor(""));
+  }
+}
+
+input.addEventListener("input", () => {
+  recordQuery();
+  show();
+});
 
 input.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     input.value = "";
-    update();
+    recordQuery();
+    show();
   }
 });
 
@@ -146,7 +185,12 @@ form.addEventListener("submit", (event) => {
   input.blur();
 });
 
-// Coming back to the page, the browser may restore the text in the search box.
-window.addEventListener("pageshow", update);
+// Back and Forward between the home view and searches.
+window.addEventListener("popstate", () => {
+  input.value = queryInAddress();
+  show();
+});
 
+input.value = queryInAddress();
 form.hidden = false;
+show();

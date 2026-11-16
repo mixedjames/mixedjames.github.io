@@ -42,7 +42,7 @@ dependencies; keep it that way. Repeat builds must give byte-identical output.
 | `build/head.html` | Pandoc partial holding the whole `<head>`, included by both templates as `$head()$` |
 | `content/index.json`, `content/home.docx` | The home page. `home.docx` is a placeholder until the user writes it |
 | `build/site/` | Shared files: `site.css`, `search.js` and self-hosted `fonts/` |
-| `build/site/search.js` | Home page search: fetches `search.json` on first keystroke, toggles `main.searching`, fills results from the `#search-result` template |
+| `build/site/search.js` | Home page search: fetches `search.json` on first keystroke, toggles `main.searching`, fills results from the `#search-result` template, keeps the query in `?q=` |
 | `build/site/vendor/fuse-7.5.0/` | Fuse.js 7.5.0 (`fuse.min.mjs`, Apache 2.0 `LICENSE`), from the npm package. To upgrade, add a new versioned folder and change the import in `search.js` |
 | `content/test/` | Feature test page: formatting, styles, tables, images, notes |
 | `content/non-inferiority-trials/` | A real lesson |
@@ -120,7 +120,8 @@ Open issues:
   - Title and Subtitle go to metadata.
   - Word's SVG wins over its PNG fallback.
 - **`summary.lua` loads `word.lua`** and uses the first filter it returns as the `Styles`
-  pass, so styled titles match the page. Keep `Styles` first in `word.lua`'s return list.
+  pass, so styled titles match the page. Keep `Styles` first in `word.lua`'s return list. It
+  splits Word's Tags on spaces, commas and semicolons.
 - **Home page list:** `build.mjs` passes it with `--variable-json=pages:…`, not
   `--metadata-file`, which would run every title through the Markdown reader. Template
   variables are inserted unescaped, so the build escapes `href` itself.
@@ -131,8 +132,11 @@ Open issues:
   `search.js` searches each word separately, keeps pages every word matched, and ranks by the
   average score. The weights, `ignoreFieldNorm`, `threshold` 0.4 and `cutoff` 0.5 were tuned on
   sample titles; retune them against real lessons. Test with `fuse.min.mjs` imported in Node.
-- **Search box state:** `autocomplete="off"` stops the browser restoring the query after Back,
-  so only the back-forward cache keeps it.
+- **Search history:** the address, not the search box, holds the query, because
+  `autocomplete="off"` stops browsers restoring the box after Back. Starting a search pushes
+  one entry, marked `startedHere`, and typing replaces it. Clearing calls `history.back()` for
+  such an entry, so Back doesn't show the home view twice. A search that arrived by link is
+  cleared with `replaceState` instead, because going back would leave the site.
 - **Positioned elements in scroll wrappers:** an absolutely positioned element inside an
   `overflow-x: auto` wrapper escapes it unless the wrapper is positioned.
 - **Word temporary files:** `~$*` and `~WRL*.tmp` are git-ignored and must never trigger builds.

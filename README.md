@@ -78,7 +78,8 @@ Heading 1 onwards in `home.docx` is not shown.
 
 The home page has a search box, which searches every page's title, subtitle and keywords.
 Typing in it switches the page to a search view; clearing it, or pressing Escape, switches
-back. The build writes the search index to `output/search.json`, and the browser searches it
+back. The query is kept in the address (`?q=acid`), so Back, Forward, reloading and shared
+links all return to the same search. The build writes the search index to `output/search.json`, and the browser searches it
 with [Fuse.js](https://www.fusejs.io). Without JavaScript, the search box is hidden and the list
 still works.
 
@@ -86,8 +87,9 @@ still works.
 
 - **Title and subtitle:** use Word's Title and Subtitle styles. They become the page title,
   and are shown in the list of pages on the home page.
-- **Keywords:** add Tags in File > Info > Properties, separated by commas or semicolons. They
-  are searched, but not shown.
+- **Keywords:** add Tags in File > Info > Properties, separated by spaces, commas or
+  semicolons. Each keyword is one word, so join words with a hyphen, as in `acid-base`.
+  Keywords are searched, but not shown.
 - **Title page:** the title, the subtitle and everything before the first Heading 1 form the
   title page, which fills at least one screen. A chevron hints that there is more below.
 - **Headings:** use Heading 1, Heading 2 and so on.

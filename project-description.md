@@ -84,6 +84,12 @@ directly.
 Typing in the search box switches the home page to a search view; focusing it alone does not,
 because focus is easy to trigger by accident. Clearing the box returns to the home page.
 
+The query is kept in the address as `?q=`, so Back and Forward move between the home view and
+searches, and a search can be reloaded or shared. Starting a search adds one history entry, and
+further typing updates it.
+
+Word's Tags are split on spaces, commas and semicolons, so each keyword is a single word.
+
 The page title and subtitle come from the docx `Title` and `Subtitle` styles.
 
 Pandoc will be used to convert `docx` to `html`. It will use the `docx+styles` option to

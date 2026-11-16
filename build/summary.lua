@@ -40,7 +40,7 @@ local function unescape_xml(text)
 end
 
 -- Pandoc doesn't read the Tags property, so take it from docProps/core.xml in the docx.
--- Tags are separated by commas or semicolons.
+-- Tags are separated by spaces, commas or semicolons, so each keyword is a single word.
 local function keywords(file)
   local handle = assert(io.open(file, "rb"))
   local archive = pandoc.zip.Archive(handle:read("a"))
@@ -50,11 +50,8 @@ local function keywords(file)
   for _, entry in ipairs(archive.entries) do
     if entry.path == "docProps/core.xml" then
       local tags = entry:contents():match("<cp:keywords>(.-)</cp:keywords>") or ""
-      for tag in unescape_xml(tags):gmatch("[^,;]+") do
-        tag = tag:match("^%s*(.-)%s*$")
-        if tag ~= "" then
-          list:insert(tag)
-        end
+      for tag in unescape_xml(tags):gmatch("[^,;%s]+") do
+        list:insert(tag)
       end
     end
   end
