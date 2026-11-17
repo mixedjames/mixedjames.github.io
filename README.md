@@ -106,6 +106,84 @@ still works.
 
 Word's temporary files (`~$*.docx`, `~WRL*.tmp`) are ignored by git.
 
+## Page scripts
+
+A page's script (the `script` field in `index.json`) can make parts of the lesson respond to
+scrolling. It finds them by their Word style names, through the `Page` object. It never uses
+CSS selectors or the page's HTML, which Pandoc generates and may change.
+
+### Naming things in Word
+
+- **Elements:** apply a custom paragraph, character or table style, such as `Key Point`.
+  Everything in that style can be found by its name, so one style can mark several elements.
+- **Sections:** apply a custom heading style, based on a built-in heading style, such as
+  `Kidney Scene` based on Heading 1. The section is the heading and everything after it, up to
+  the next heading of the same or a higher level.
+- Names match exactly, including capitals and spaces. Two heading styles that differ only by
+  spaces and hyphens, such as `Twin Scene` and `Twin-Scene`, can't be told apart, so neither
+  can be found, and the build warns.
+- Word's bookmarks don't work as names, because Pandoc drops them.
+
+### Finding things
+
+```js
+Page.Element("Key Point")                          // every element in that style
+Page.Section("Kidney Scene")                       // every section with that heading style
+Page.Section("Kidney Scene").Element("Key Point")  // only those inside that section
+Page.Element("Kidney Scene")                       // the heading itself
+```
+
+Each lookup returns a collection. A collection may be empty, but is never null, so a chain
+always runs to the end. `length` gives the number of members. A lookup from `Page` that finds
+nothing warns in the console and lists the style names on the page, since the name is probably
+mistyped. A lookup inside a section that finds nothing stays quiet.
+
+Actions apply to each member separately and return the same collection, so they can be
+chained.
+
+### Actions
+
+| Action | What it does |
+|---|---|
+| `Log(range)` | Writes to the console as each member enters and leaves its range, which way the reader was scrolling, and its progress in tenths. |
+
+`Pin()` is next.
+
+### Ranges
+
+A range says when an action is active. Each end pairs an edge of the element (`e`) with a line
+across the viewport (`v`), in either order:
+
+```js
+Page.Element("Key Point").Log({ start: "etop vbottom", end: "ebottom vtop" });
+```
+
+This range starts when the element's top reaches the bottom of the viewport, and ends when
+its bottom passes the top. Edges and lines are `top`, `center`, `bottom` or a percentage, such
+as `e25%` or `v80%`. The default is `{ start: "etop vcenter", end: "ebottom vcenter" }`: while
+the middle of the viewport is over the element.
+
+Progress runs from 0 at the start to 1 at the end. Jumping straight past a range, by a link or
+a fast flick, still reports enter, progress and leave, in that order. A range that ends where
+it starts, or before, is a single point, and the console warns.
+
+Ranges near the end of a page may never start or finish, because the page can't scroll far
+enough. The console says so. It depends on the screen size, so check at phone and desktop
+widths.
+
+### Checking
+
+- Open the browser's console to see `Log()` and any warnings or errors, all marked `[Page]`.
+- Add `?scrolldebug` to the address to mark every range on the page.
+- A mistake in a range or an option is reported, and the default is used, so the rest of the
+  script still runs.
+
+### Rules for scripts
+
+- The script is an ES module, so it runs in strict mode and its variables stay local to it.
+- Use only `Page` and the collections it returns. The runtime uses GSAP internally, but GSAP
+  isn't available to page scripts, so it can change without breaking lessons.
+
 ## Writing code
 
 Code that we write or generate stays readable by people: no minified scripts or stylesheets,

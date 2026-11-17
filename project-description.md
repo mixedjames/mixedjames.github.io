@@ -117,8 +117,30 @@ page links to the site-wide stylesheet (`site/site.css`) by a relative path, ahe
 inline stylesheet. The fonts are EB Garamond (primary) and Open Sans (paired sans-serif),
 hosted locally in `site/fonts/` rather than loaded from Google.
 
-Custom Word styles become CSS classes so that page stylesheets and scripts can address them.
-Custom heading styles must be based on a built-in heading style.
+Custom Word styles become CSS classes so that page stylesheets can address them. Custom
+heading styles must be based on a built-in heading style.
+
+## Page scripts
+
+Scroll-triggered behaviour is written in each page's own script, using a small interface,
+`Page`, provided by the site. The README describes it for authors.
+
+Authors can't control the HTML that Pandoc generates, so scripts never use CSS selectors or
+the page's structure. They find parts of a lesson by the Word style names the author applied:
+`Page.Element("Key Point")` for paragraph, character and table styles, and
+`Page.Section("Kidney Scene")` for the section that begins with a heading in a custom heading
+style. The build records each element's exact style name in the HTML for the runtime to read.
+
+Lookups return collections, which may be empty but are never null, and actions on a collection
+apply to each member. Actions that follow scrolling take a range, written as an element edge
+and a viewport line for each end, such as `{ start: "etop vbottom", end: "ebottom vtop" }`.
+
+The runtime uses GSAP and its ScrollTrigger plugin, vendored at a pinned version. GSAP stays
+private to the runtime, so lessons depend only on `Page` and the library can be upgraded or
+replaced. Page scripts run as ES modules, after the runtime.
+
+The first action, `Log()`, writes each member's progress through its range to the console.
+Pinning comes next.
 
 Pandoc drops the "Figure 1" and "Table 1" labels from Word captions, so the build regenerates
 them as real text, numbered in document order.

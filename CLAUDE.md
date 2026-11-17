@@ -92,8 +92,26 @@ These are agreed with the user:
   - Each entry shows an upright title, a muted Open Sans subtitle, and the date in small caps.
   - Typing switches to the search view: the title shrinks, and the description, scroll cue
     and list are hidden.
-- **Scrollytelling** comes later; make only passive provision for it now. Never put
-  `overflow: hidden` on an ancestor of content, because it breaks `position: sticky`.
+- **Scrollytelling:** driven by each page's own script, through the `Page` runtime.
+  - **No structure in the public API:** scripts find things only by exact Word style name,
+    never by CSS selector, class or Pandoc's markup. Collection members are the runtime's own
+    objects, not DOM nodes.
+  - **Lookups:** `Page.Element(name)` and `Page.Section(name)`, also chained from a collection.
+    They return collections, jQuery-style: possibly empty, never null. Only empty lookups from
+    `Page` warn.
+  - **Methods are capitalised** (`Element`, `Section`, `Log`, `Pin`), as the user sketched them.
+  - **Ranges:** `{ start: "etop vbottom", end: "ebottom vtop" }`. `e` is an element edge and `v`
+    a viewport line, in either order: `top`, `center`, `bottom` or a percentage. The default
+    is `etop vcenter` to `ebottom vcenter`.
+  - **Engine:** GSAP with ScrollTrigger, private to `scroll.js`. Never expose GSAP, because
+    every public GSAP call becomes a compatibility burden.
+  - **Pinning:** GSAP's own pinning for now. The user finds `position: sticky` unreliable. If
+    GSAP's pinning ever jitters, the user's proven technique is: wrap the original in a
+    wrapper that always keeps its place in the flow; move the element out at the start and
+    end of the pinned range and hide it in between; show a clone, positioned in an overlay
+    layer, during the range. Other animations then have to allow for the clone.
+  - Never put `overflow: hidden` on an ancestor of content, because it breaks sticky and
+    pinning.
 
 These are still provisional, carried over from an earlier session and not yet reviewed with the
 user:
@@ -170,6 +188,8 @@ Open issues:
   - the screenshots look right when reviewed by eye.
 - For edge cases, write Markdown, convert it to docx with Pandoc, then run it through the real
   template and filter with the same options as `build.mjs`.
+- For `Page` scripts, collect the console messages and check each member's sequence:
+  scrolling down and up in small steps, and jumping from the top to the bottom and back.
 - Headless Chromium can't show how `100svh` behaves on an iPhone, or how text renders on a real
   screen. Ask the user to check on a device.
 
@@ -190,4 +210,11 @@ Open issues:
    - React only to `index.json` files and the files they name.
    - Debounce, because Word saves by replacing the file.
    - Ideally add a local server that reloads the page.
-5. **Later:** contents pages, then scroll-driven animation.
+5. **Scrollytelling (in progress):**
+   - Done: style names in the filter, the `Page` runtime, private GSAP, ranges and `Log()`.
+   - Next: `Pin()`, using GSAP's pinning. Show the user design options first.
+   - Still to do: check ranges on an iPhone, where the address bar changes the viewport
+     height. Use `?scrolldebug`.
+   - Open: ranges near the end of a page may never finish. Extra space at the end of the page
+     is a possible fix, and a design decision for the user.
+6. **Later:** contents pages.
