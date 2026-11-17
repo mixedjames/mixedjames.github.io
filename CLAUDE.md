@@ -148,6 +148,14 @@ Open issues:
   one entry, marked `startedHere`, and typing replaces it. Clearing calls `history.back()` for
   such an entry, so Back doesn't show the home view twice. A search that arrived by link is
   cleared with `replaceState` instead, because going back would leave the site.
+- **Scroll ranges:** `scroll.js` turns `{ start: "etop vbottom" }` into ScrollTrigger's
+  `"top bottom"`. It works out enter, progress and leave itself from `onUpdate`, rather than
+  from ScrollTrigger's own enter/leave callbacks, which fire after `onUpdate`. That's what
+  keeps the order right when a jump skips a whole range. ScrollTrigger turns a backwards range
+  into a single point by setting its end 0.01px past its start, so the test is
+  `end - start < 1`. Ranges near the end of a page may never start or finish, because the
+  page can't scroll far enough; the runtime warns. Test sequences on a page long enough for
+  every range to finish.
 - **Positioned elements in scroll wrappers:** an absolutely positioned element inside an
   `overflow-x: auto` wrapper escapes it unless the wrapper is positioned.
 - **Word temporary files:** `~$*` and `~WRL*.tmp` are git-ignored and must never trigger builds.
