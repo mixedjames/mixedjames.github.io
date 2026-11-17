@@ -164,8 +164,11 @@ async function buildPage(dir, config, extraArgs = []) {
       const js = await readFile(path.join(dir, config.script), "utf8");
       const file = path.join(includes, "script.html");
       // A literal </script> inside the source would end the inline element early.
-      await writeFile(file, `<script>\n${js.replaceAll("</script", "<\\/script")}</script>\n`);
+      await writeFile(file, `<script type="module">\n${js.replaceAll("</script", "<\\/script")}</script>\n`);
       args.push(`--include-after-body=${file}`);
+      // The page's script is a module, so it runs in strict mode, after site/scroll.js, which
+      // the template loads just before it and which defines Page.
+      args.push("--variable=pagescript");
     }
 
     // Pandoc runs from the page's output directory so that media links are relative.

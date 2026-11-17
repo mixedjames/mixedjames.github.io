@@ -44,7 +44,9 @@ dependencies; keep it that way. Repeat builds must give byte-identical output.
 | `content/index.json`, `content/home.docx` | The home page. `home.docx` is a placeholder until the user writes it |
 | `build/site/` | Shared files: `site.css`, `search.js` and self-hosted `fonts/` |
 | `build/site/search.js` | Home page search: fetches `search.json` on first keystroke, toggles `main.searching`, fills results from the `#search-result` template, keeps the query in `?q=` |
+| `build/site/scroll.js` | The `Page` runtime for lesson scripts: `Page.Element(name)` and `Page.Section(name)` find parts of a lesson by exact Word style name and return collections (never null) with chainable actions. An ES module, loaded only on pages with a `script` (`pagescript` template variable), just before the page script, which is also a module. Everything but `Page` and collection methods is private, GSAP included |
 | `build/site/vendor/fuse-7.5.0/` | Fuse.js 7.5.0 (`fuse.min.mjs`, Apache 2.0 `LICENSE`), from the npm package. To upgrade, add a new versioned folder and change the import in `search.js` |
+| `build/site/vendor/gsap-3.15.1/` | GSAP 3.15.1 with ScrollTrigger: the five ES modules ScrollTrigger needs, copied unchanged from the npm package, plus `LICENSE.md` (GSAP's no-charge licence, terms at gsap.com). Imported only by `scroll.js`; never exposed to lesson scripts, because any public GSAP call becomes a compatibility burden. Use the ES modules, not `dist/`, whose builds put `gsap` and about 30 more names on `window`. To upgrade, add a new versioned folder and change the imports in `scroll.js` |
 | `content/test/` | Feature test page: formatting, styles, tables, images, notes |
 | `content/non-inferiority-trials/` | A real lesson |
 | `output/` | Generated and committed. Never edit by hand |

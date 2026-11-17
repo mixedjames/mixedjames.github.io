@@ -64,6 +64,10 @@ $endif$
 </template>
 </main>
 <script type="module" src="$siteroot$site/search.js"></script>
+$-- The Page runtime for the page's own script, which follows it.
+$if(pagescript)$
+<script type="module" src="$siteroot$site/scroll.js"></script>
+$endif$
 $for(include-after)$
 $include-after$
 $endfor$

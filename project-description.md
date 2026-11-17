@@ -41,7 +41,7 @@ configuration for the subdirectory and will identify it either as:
 Directories marked as source for an actual output page will contain:
 - A mandatory .docx file which will provide the content of the page
 - An optional .css stylesheet which will be inlined into the generated page
-- An optional .js script which will be inlined into the generated page
+- An optional .js script which will be inlined into the generated page, as a module
 
 The names are arbitrary as the local index.json will specify them. `index.json` is the glue
 that ties the docx, css, js and output together:
@@ -153,4 +153,4 @@ Although these are not v1 features we should make passive provision where approp
 
 Code that we write, and everything the build generates, stays readable by people: no
 minification, and JSON written with indentation and a fixed key order. Third-party libraries,
-such as Fuse.js, are the exception and are vendored as their authors ship them.
+such as Fuse.js and GSAP, are the exception and are vendored as their authors ship them.

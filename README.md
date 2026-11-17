@@ -49,7 +49,7 @@ Create a directory anywhere under `./content` and put an `index.json` in it:
 | `source` | Yes | The Word document, relative to this directory. |
 | `output` | Yes | The output filename. A plain filename, with no directories. |
 | `style` | No | A stylesheet, inlined into the page. It comes after the link to the site stylesheet, so it can override it. |
-| `script` | No | A script, inlined at the end of the page. |
+| `script` | No | A script, inlined at the end of the page as a module, so it runs in strict mode. It runs after the `Page` runtime, which it can use. |
 | `date` | No | The date the page was written, as `YYYY-MM-DD`. Pages are listed newest first. An undated page is listed last, and the build warns about it. |
 
 The page is written to the same path within `./output` as its directory has within
@@ -127,7 +127,7 @@ build before committing.
 | `build/word.lua` | Pandoc filter that turns Word's output into clean HTML |
 | `build/docx.lua` | Helpers for reading parts of the docx that Pandoc doesn't pass on |
 | `build/summary.lua` | Pandoc writer that summarises a page (title, subtitle, keywords) for the home page and search |
-| `build/site/` | Files shared by every page, copied to `output/site/`: `site.css`, `search.js`, the fonts and `vendor/` |
+| `build/site/` | Files shared by every page, copied to `output/site/`: `site.css`, `search.js`, `scroll.js` (the `Page` runtime for page scripts), the fonts and `vendor/` |
 | `build/site/vendor/` | Third-party libraries, each in a folder named with its version, with its licence |
 | `build/template.html` | The HTML template for pages |
 | `build/home.html` | The HTML template for the home page |
