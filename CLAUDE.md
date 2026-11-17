@@ -35,7 +35,8 @@ dependencies; keep it that way. Repeat builds must give byte-identical output.
 | Path | Role |
 |---|---|
 | `build/build.mjs` | Finds each `content/**/index.json`, runs Pandoc per page, copies `build/site/` to `output/site/`, passes the `siteroot` variable (such as `../`) to the template |
-| `build/word.lua` | Pandoc filter, in passes: `Styles` (Word styles become classes), `Notes` (counts notes and warns; they stay Pandoc's plain end-of-page notes), `Blocks` (caption numbers, scroll wrappers), `TitlePage` (moves the intro into the `titlepage` metadata field) |
+| `build/word.lua` | Pandoc filter, in passes: `Styles` (Word styles become classes, plus the exact style name in `data-word-style` for page scripts), `Notes` (counts notes and warns; they stay Pandoc's plain end-of-page notes), `Blocks` (caption numbers, scroll wrappers), `TitlePage` (moves the intro into the `titlepage` metadata field) |
+| `build/docx.lua` | Helpers shared by both Lua files for reading parts of the docx that Pandoc doesn't pass on (Tags, style names) |
 | `build/summary.lua` | Pandoc custom writer, run once more per page: title and subtitle as HTML and plain text, plus keywords from the docx Tags property via `pandoc.zip` |
 | `build/template.html` | Page structure, including the title page and scroll cue |
 | `build/home.html` | Home page structure: the same title page, then the list of pages from the `pages` variable |
@@ -121,7 +122,15 @@ Open issues:
   - Word's SVG wins over its PNG fallback.
 - **`summary.lua` loads `word.lua`** and uses the first filter it returns as the `Styles`
   pass, so styled titles match the page. Keep `Styles` first in `word.lua`'s return list. It
-  splits Word's Tags on spaces, commas and semicolons.
+  strips `data-word-style`, which only page scripts need. It splits Word's Tags on spaces,
+  commas and semicolons.
+- **Style names:** `data-word-style` holds the exact Word style name and is private to the
+  scroll runtime; lesson scripts never see it. Pandoc passes paragraph and character style
+  names exactly, but gives a custom heading style as a class with spaces turned into hyphens,
+  so `word.lua` reads the real name from `word/styles.xml`. Heading styles differing only by
+  spaces and hyphens can't be told apart; they get no name and the build warns.
+  `--section-divs` copies a heading's style name onto its `<section>`. Word bookmarks can't
+  name things: Pandoc's docx reader drops any bookmark nothing links to.
 - **Home page list:** `build.mjs` passes it with `--variable-json=pages:…`, not
   `--metadata-file`, which would run every title through the Markdown reader. Template
   variables are inserted unescaped, so the build escapes `href` itself.

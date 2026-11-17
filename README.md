@@ -125,6 +125,7 @@ build before committing.
 | `content/` | Page sources: Word documents, `index.json` files, page CSS and JS |
 | `build/build.mjs` | The build script |
 | `build/word.lua` | Pandoc filter that turns Word's output into clean HTML |
+| `build/docx.lua` | Helpers for reading parts of the docx that Pandoc doesn't pass on |
 | `build/summary.lua` | Pandoc writer that summarises a page (title, subtitle, keywords) for the home page and search |
 | `build/site/` | Files shared by every page, copied to `output/site/`: `site.css`, `search.js`, the fonts and `vendor/` |
 | `build/site/vendor/` | Third-party libraries, each in a folder named with its version, with its licence |

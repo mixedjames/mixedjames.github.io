@@ -10,9 +10,19 @@
 -- Reuse the filter's Styles pass, so that styled text in a title matches the page.
 local here = PANDOC_SCRIPT_FILE:match("^(.*[/\\])") or ""
 local Styles = dofile(here .. "word.lua")[1]
+local docx = dofile(here .. "docx.lua")
+
+-- Styles also records each Word style's exact name for the page's scripts. The home page
+-- list and search.json don't need it.
+local Unname = {
+  Span = function(el)
+    el.attributes["data-word-style"] = nil
+    return el
+  end,
+}
 
 local function html(inlines)
-  local doc = pandoc.Pandoc { pandoc.Plain(inlines:walk(Styles)) }
+  local doc = pandoc.Pandoc { pandoc.Plain(inlines:walk(Styles):walk(Unname)) }
   return (pandoc.write(doc, "html5", { wrap_text = "none" }):gsub("%s+$", ""))
 end
 
@@ -26,34 +36,14 @@ local function field(value)
   return html(inlines), pandoc.utils.stringify(inlines)
 end
 
-local entities = { amp = "&", lt = "<", gt = ">", quot = '"', apos = "'" }
-
-local function unescape_xml(text)
-  return (text:gsub("&(#?x?)(%w+);", function(kind, name)
-    if kind == "#" then
-      return utf8.char(tonumber(name))
-    elseif kind == "#x" then
-      return utf8.char(tonumber(name, 16))
-    end
-    return entities[name]
-  end))
-end
-
 -- Pandoc doesn't read the Tags property, so take it from docProps/core.xml in the docx.
 -- Tags are separated by spaces, commas or semicolons, so each keyword is a single word.
 local function keywords(file)
-  local handle = assert(io.open(file, "rb"))
-  local archive = pandoc.zip.Archive(handle:read("a"))
-  handle:close()
-
+  local core = docx.part(file, "docProps/core.xml") or ""
+  local tags = core:match("<cp:keywords>(.-)</cp:keywords>") or ""
   local list = pandoc.List {}
-  for _, entry in ipairs(archive.entries) do
-    if entry.path == "docProps/core.xml" then
-      local tags = entry:contents():match("<cp:keywords>(.-)</cp:keywords>") or ""
-      for tag in unescape_xml(tags):gmatch("[^,;%s]+") do
-        list:insert(tag)
-      end
-    end
+  for tag in docx.unescape_xml(tags):gmatch("[^,;%s]+") do
+    list:insert(tag)
   end
   return list
 end

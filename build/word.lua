@@ -1,5 +1,11 @@
 -- Turns the Word-flavoured AST from Pandoc's docx+styles reader into the markup our
 -- CSS expects: custom styles become classes and Word's page layout is thrown away.
+--
+-- Each styled element also keeps its exact Word style name in data-word-style. Page scripts
+-- find elements by that name through the Page runtime, never through classes or structure.
+
+local here = PANDOC_SCRIPT_FILE:match("^(.*[/\\])") or ""
+local docx = dofile(here .. "docx.lua")
 
 -- Styles Word applies by default, which carry no meaning for the page. Lower case.
 local noise = {}
@@ -16,15 +22,54 @@ local function slug(name)
   return (name:lower():gsub("[^%w]+", "-"):gsub("^-", ""):gsub("-$", ""))
 end
 
--- Replaces a custom-style attribute with a class. Returns true if a class was added.
+-- Replaces a custom-style attribute with a class and the exact style name.
 local function apply_style(el)
   local style = el.attributes["custom-style"]
   el.attributes["custom-style"] = nil
   if not style or noise[style:lower()] then
-    return false
+    return
   end
   el.classes:insert(slug(style))
-  return true
+  el.attributes["data-word-style"] = style
+end
+
+-- Pandoc gives a custom heading style as a class, with spaces turned into hyphens, so
+-- "Kidney Scene" arrives as "Kidney-Scene". The exact names come from the docx's style list.
+-- Styles that differ only by spaces and hyphens, such as "Twin Scene" and "Twin-Scene", arrive
+-- as the same class, so they can't be told apart and get no name.
+local heading_styles
+
+local function read_heading_styles()
+  local names = {}
+  local xml = docx.part(PANDOC_STATE.input_files[1], "word/styles.xml") or ""
+  for style in xml:gmatch("<w:style%s.-</w:style>") do
+    local name = style:match('<w:name w:val="([^"]*)"')
+    if name and style:match('^<w:style%s[^>]*w:type="paragraph"') then
+      name = docx.unescape_xml(name)
+      local class = name:gsub("%s", "-")
+      names[class] = names[class] or pandoc.List {}
+      names[class]:insert(name)
+    end
+  end
+  return names
+end
+
+local warned = {}
+
+local function heading_style(class)
+  heading_styles = heading_styles or read_heading_styles()
+  local names = heading_styles[class]
+  if not names then
+    return nil
+  elseif #names > 1 then
+    if not warned[class] then
+      warned[class] = true
+      io.stderr:write("[WARNING] Heading styles can't be told apart, so scripts can't find them: \""
+        .. table.concat(names, "\", \"") .. "\"\n")
+    end
+    return nil
+  end
+  return names[1]
 end
 
 local function has_attr(el)
@@ -57,6 +102,9 @@ function Styles.Table(el)
 end
 
 function Styles.Header(el)
+  for _, class in ipairs(el.classes) do
+    el.attributes["data-word-style"] = heading_style(class)
+  end
   el.classes = el.classes:map(slug)
   return el
 end
