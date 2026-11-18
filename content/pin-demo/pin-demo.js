@@ -4,7 +4,7 @@
 const diagram = Page.Element("Diagram");
 
 const scene = Page.Trigger({
-  start: { anchor: diagram, edges: "etop vtop" },
+  start: { anchor: diagram, edges: "ebottom vbottom" },
   end: { anchor: Page.Section("Kidney Scene"), edges: "ebottom vbottom" },
 });
 

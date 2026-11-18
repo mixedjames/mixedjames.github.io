@@ -473,7 +473,10 @@ class Collection {
       // Set before GSAP measures it.
       member.node.setAttribute(PINNED, "");
       const quiet = { enter() {}, leave() {}, progress() {} };
-      watch(`Pin ${member.label}`, ends, quiet, warnerOf(trigger), {
+      // The label names the pin's markers with ?scrolldebug. GSAP also puts it in a class name
+      // on its pin wrapper, and class names can't contain spaces.
+      const label = `Pin ${member.label}`.replaceAll(/\s+/g, "-");
+      watch(label, ends, quiet, warnerOf(trigger), {
         pin: member.node,
         pinSpacing: false,
       });
