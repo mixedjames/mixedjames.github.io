@@ -132,15 +132,23 @@ the page's structure. They find parts of a lesson by the Word style names the au
 style. The build records each element's exact style name in the HTML for the runtime to read.
 
 Lookups return collections, which may be empty but are never null, and actions on a collection
-apply to each member. Actions that follow scrolling take a range, written as an element edge
-and a viewport line for each end, such as `{ start: "etop vbottom", end: "ebottom vtop" }`.
+apply to each member.
+
+Actions that follow scrolling use a trigger: a range with a start and an end, each written as an
+anchor element and its edges, such as `{ anchor: Page.Element("Kidney Diagram"), edges: "etop
+vbottom" }`, where `e` is an edge of the anchor and `v` a line across the viewport. The two ends
+can be on different elements. `Page.Trigger({ start, end })` makes one. An anchor must be exactly
+one element; anything else is reported as an error and gives a trigger that never fires, so the
+rest of the script still runs. Actions on a collection take the same shape, with each member as
+the default anchor.
 
 The runtime uses GSAP and its ScrollTrigger plugin, vendored at a pinned version. GSAP stays
 private to the runtime, so lessons depend only on `Page` and the library can be upgraded or
 replaced. Page scripts run as ES modules, after the runtime.
 
-The first action, `Log()`, writes each member's progress through its range to the console.
-Pinning comes next.
+The first action, `Log()`, writes progress through a trigger's range to the console. Pinning
+comes next. Pinned elements will always be overlaid on the page and never push later content
+down.
 
 Pandoc drops the "Figure 1" and "Table 1" labels from Word captions, so the build regenerates
 them as real text, numbered in document order.

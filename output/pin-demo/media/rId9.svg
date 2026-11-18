@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="360" viewBox="0 0 600 360">
+  <rect x="0" y="0" width="600" height="360" fill="#fff"/>
+  <path d="M300 40 C 420 40, 470 140, 430 220 C 400 290, 330 320, 290 300 C 250 280, 290 230, 260 200 C 230 170, 170 190, 170 130 C 170 70, 230 40, 300 40 Z" fill="#c9725b" stroke="#6b2a1c" stroke-width="4"/>
+  <path d="M265 200 C 220 230, 200 280, 200 340" fill="none" stroke="#6b2a1c" stroke-width="10"/>
+  <text x="300" y="150" font-family="Georgia" font-size="28" fill="#2b1209" text-anchor="middle">Nephron</text>
+  <text x="40" y="340" font-family="Georgia" font-size="22" fill="#333">Diagram for pin demo</text>
+</svg>

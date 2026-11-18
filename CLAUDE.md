@@ -44,7 +44,7 @@ dependencies; keep it that way. Repeat builds must give byte-identical output.
 | `content/index.json`, `content/home.docx` | The home page. `home.docx` is a placeholder until the user writes it |
 | `build/site/` | Shared files: `site.css`, `search.js` and self-hosted `fonts/` |
 | `build/site/search.js` | Home page search: fetches `search.json` on first keystroke, toggles `main.searching`, fills results from the `#search-result` template, keeps the query in `?q=` |
-| `build/site/scroll.js` | The `Page` runtime for lesson scripts: `Page.Element(name)` and `Page.Section(name)` find parts of a lesson by exact Word style name and return collections (never null) with chainable actions. An ES module, loaded only on pages with a `script` (`pagescript` template variable), just before the page script, which is also a module. Everything but `Page` and collection methods is private, GSAP included |
+| `build/site/scroll.js` | The `Page` runtime for lesson scripts: `Page.Element(name)` and `Page.Section(name)` find parts of a lesson by exact Word style name and return collections (never null) with chainable actions. `Page.Trigger({ start, end })` makes a trigger whose ends are anchored on single elements. An ES module, loaded only on pages with a `script` (`pagescript` template variable), just before the page script, which is also a module. Everything but `Page` and collection methods is private, GSAP included |
 | `build/site/vendor/fuse-7.5.0/` | Fuse.js 7.5.0 (`fuse.min.mjs`, Apache 2.0 `LICENSE`), from the npm package. To upgrade, add a new versioned folder and change the import in `search.js` |
 | `build/site/vendor/gsap-3.15.1/` | GSAP 3.15.1 with ScrollTrigger: the five ES modules ScrollTrigger needs, copied unchanged from the npm package, plus `LICENSE.md` (GSAP's no-charge licence, terms at gsap.com). Imported only by `scroll.js`; never exposed to lesson scripts, because any public GSAP call becomes a compatibility burden. Use the ES modules, not `dist/`, whose builds put `gsap` and about 30 more names on `window`. To upgrade, add a new versioned folder and change the imports in `scroll.js` |
 | `content/test/` | Feature test page: formatting, styles, tables, images, notes |
@@ -100,9 +100,19 @@ These are agreed with the user:
     They return collections, jQuery-style: possibly empty, never null. Only empty lookups from
     `Page` warn.
   - **Methods are capitalised** (`Element`, `Section`, `Log`, `Pin`), as the user sketched them.
-  - **Ranges:** `{ start: "etop vbottom", end: "ebottom vtop" }`. `e` is an element edge and `v`
-    a viewport line, in either order: `top`, `center`, `bottom` or a percentage. The default
-    is `etop vcenter` to `ebottom vcenter`.
+  - **Triggers:** scrolling behaviour hangs on a trigger, a range with a start and an end, each
+    anchored on its own element: `Page.Trigger({ start: { anchor, edges }, end: { anchor,
+    edges } })`. The name is `Trigger`, not `ScrollTrigger`, which is GSAP's.
+    - **Edges:** `"etop vbottom"`. `e` is an anchor edge and `v` a viewport line, in either
+      order: `top`, `center`, `bottom` or a percentage. The default is `etop vcenter` to
+      `ebottom vcenter`. Bad edges are an error, and the default is used.
+    - **Anchors** must be a lookup that found exactly one element. Anything else, or a missing
+      anchor, is a `console.error`, and the trigger is inert: it accepts every action and
+      never fires, so the script runs on. Null-free, but loud.
+    - **Collection actions** take the same `{ start, end }` shape, with the anchor optional
+      and defaulting to each member, so each member gets its own trigger. A string end is
+      short for `{ edges }`.
+    - **Distances** (such as "500px after the start") are deferred until a lesson needs them.
   - **Engine:** GSAP with ScrollTrigger, private to `scroll.js`. Never expose GSAP, because
     every public GSAP call becomes a compatibility burden.
   - **Pinning:** GSAP's own pinning for now. The user finds `position: sticky` unreliable. If
@@ -110,6 +120,8 @@ These are agreed with the user:
     wrapper that always keeps its place in the flow; move the element out at the start and
     end of the pinned range and hide it in between; show a clone, positioned in an overlay
     layer, during the range. Other animations then have to allow for the clone.
+  - **Pins are overlay only** and never affect the content after them: no general-purpose
+    pushing content down. Spacers may be considered later.
   - Never put `overflow: hidden` on an ancestor of content, because it breaks sticky and
     pinning.
 
@@ -166,14 +178,17 @@ Open issues:
   one entry, marked `startedHere`, and typing replaces it. Clearing calls `history.back()` for
   such an entry, so Back doesn't show the home view twice. A search that arrived by link is
   cleared with `replaceState` instead, because going back would leave the site.
-- **Scroll ranges:** `scroll.js` turns `{ start: "etop vbottom" }` into ScrollTrigger's
-  `"top bottom"`. It works out enter, progress and leave itself from `onUpdate`, rather than
+- **Scroll ranges:** `scroll.js` turns edges such as `"etop vbottom"` into ScrollTrigger's
+  `"top bottom"`, with the start anchor as `trigger` and the end anchor as `endTrigger`. Each
+  action watches its trigger with its own ScrollTrigger, so `?scrolldebug` shows a trigger's
+  markers once per action; warnings are kept once per trigger. It works out enter, progress and leave itself from `onUpdate`, rather than
   from ScrollTrigger's own enter/leave callbacks, which fire after `onUpdate`. That's what
   keeps the order right when a jump skips a whole range. ScrollTrigger turns a backwards range
   into a single point by setting its end 0.01px past its start, so the test is
   `end - start < 1`. Ranges near the end of a page may never start or finish, because the
   page can't scroll far enough; the runtime warns. Test sequences on a page long enough for
-  every range to finish.
+  every range to finish. Ends on elements less than a screen apart can run backwards on a
+  phone but not on a desktop, so check edges at both.
 - **Address bar on phones:** ScrollTrigger measures the viewport from a hidden `100vh` element
   (the tall viewport, with the bar hidden). On touch devices it ignores resizes caused by the
   bar (`ignoreMobileResize`), unless the height changes by more than 25%. So `v` lines sit
@@ -219,8 +234,13 @@ Open issues:
    - Debounce, because Word saves by replacing the file.
    - Ideally add a local server that reloads the page.
 5. **Scrollytelling (in progress):**
-   - Done: style names in the filter, the `Page` runtime, private GSAP, ranges and `Log()`.
-   - Next: `Pin()`, using GSAP's pinning. Show the user design options first.
+   - Done: style names in the filter, the `Page` runtime, private GSAP, `Page.Trigger` with
+     anchored ends, and `Log()`.
+   - Next: `Pin()`, overlay only, taking a trigger, using GSAP's pinning (`pinSpacing: false`).
+     Start with a prototype and demo the user can view on a phone. Watch for: GSAP's
+     `pin-spacer` wrapper breaking the `main > *` column CSS when a section is pinned; GSAP
+     releasing an overlay pin offset by the pin distance, leaving a gap and possibly overlapping
+     later content; jitter on phones.
    - Checked on Android: ranges stay put as the address bar shows and hides (see the gotcha).
      iPhone is unchecked, because the user has no iPhone. It is expected to behave the same.
    - Open: ranges near the end of a page may never finish. Extra space at the end of the page

@@ -1,5 +1,15 @@
 [
   {
+    "url": "pin-demo/pin-demo.html",
+    "date": "2026-11-18",
+    "dateText": "18 November 2026",
+    "title": "Pin demo",
+    "titleText": "Pin demo",
+    "subtitle": "A temporary page for trying pinning on a phone",
+    "subtitleText": "A temporary page for trying pinning on a phone",
+    "keywords": []
+  },
+  {
     "url": "test/test.html",
     "date": "0000-01-01",
     "dateText": "",

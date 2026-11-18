@@ -1,0 +1,7 @@
+{
+  "type": "page",
+  "source": "pin-demo.docx",
+  "script": "pin-demo.js",
+  "output": "pin-demo.html",
+  "date": "2026-11-18"
+}

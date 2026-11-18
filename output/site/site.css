@@ -412,6 +412,18 @@ math {
   }
 }
 
+/* Pinned elements, marked by scroll.js. A pin is held over the page, which scrolls beneath it,
+   so its background hides the text passing under it. flow-root keeps its children's margins
+   inside it: GSAP fixes the pin's height, so margins that collapsed through it would otherwise
+   be lost and move the content after it. z-index keeps it above positioned elements later in
+   the page, such as the scroll wrappers around tables. */
+
+[data-page-pin] {
+  display: flow-root;
+  z-index: 1;
+  background: var(--paper);
+}
+
 /* Home page */
 
 /* Hidden on screen but still read by screen readers, such as the search box's label. */

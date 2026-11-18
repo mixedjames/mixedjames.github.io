@@ -145,45 +145,74 @@ chained.
 
 | Action | What it does |
 |---|---|
-| `Log(range)` | Writes to the console as each member enters and leaves its range, which way the reader was scrolling, and its progress in tenths. |
+| `trigger.Log()` | Writes to the console as the reader enters and leaves the trigger's range, which way they were scrolling, and their progress in tenths. |
+| `collection.Log({ start, end })` | The same, with a trigger for each member. |
 
-`Pin()` is next.
+`Pin()` is next. Pinned elements will always sit over the page, and never push later content
+down.
 
-### Ranges
+### Triggers
 
-A range says when an action is active. Each end pairs an edge of the element (`e`) with a line
-across the viewport (`v`), in either order:
+A trigger is a stretch of scrolling, with a start and an end. Each end pairs an edge of an
+anchor element (`e`) with a line across the viewport (`v`), in either order. The two ends can
+be on different elements, however far apart:
 
 ```js
-Page.Element("Key Point").Log({ start: "etop vbottom", end: "ebottom vtop" });
+const scene = Page.Trigger({
+  start: { anchor: Page.Element("Kidney Diagram"), edges: "etop vtop" },
+  end: { anchor: Page.Section("Kidney Scene"), edges: "ebottom vbottom" },
+});
+scene.Log();
 ```
 
-This range starts when the element's top reaches the bottom of the viewport, and ends when
-its bottom passes the top. Edges and lines are `top`, `center`, `bottom` or a percentage, such
-as `e25%` or `v80%`. The default is `{ start: "etop vcenter", end: "ebottom vcenter" }`: while
-the middle of the viewport is over the element.
+This trigger starts when the diagram's top reaches the top of the viewport, and ends when the
+scene's bottom reaches the bottom. Edges and lines are `top`, `center`, `bottom` or a
+percentage, such as `e25%` or `v80%`. Without `edges`, the start is `"etop vcenter"` and the end
+`"ebottom vcenter"`: while the middle of the viewport is over the anchor.
+
+An anchor must be a lookup that found exactly one element. If it found nothing or several, or
+the anchor is missing, the console shows an error, and the trigger never fires, though the rest
+of the script still runs. When a style marks several elements, narrow the lookup with
+`Section()`, as in `Page.Section("Kidney Scene").Element("Key Point")`.
+
+Actions on a collection take the same shape, but the anchor is optional and defaults to each
+member, which gets a trigger of its own. A string is short for `{ edges: ... }`:
+
+```js
+// Each Key Point, from its top reaching the bottom of the viewport to its bottom passing the top.
+Page.Element("Key Point").Log({ start: "etop vbottom", end: "ebottom vtop" });
+
+// Each Key Point, from its own top until the summary reaches the middle of the viewport.
+Page.Element("Key Point").Log({
+  start: "etop vbottom",
+  end: { anchor: Page.Element("Summary"), edges: "etop vcenter" },
+});
+```
 
 Progress runs from 0 at the start to 1 at the end. Jumping straight past a range, by a link or
-a fast flick, still reports enter, progress and leave, in that order. A range that ends where
-it starts, or before, is a single point, and the console warns.
+a fast flick, still reports enter, progress and leave, in that order. A trigger that ends where
+it starts, or before, is a single point, and the console warns. Ends on elements less than a
+screen apart can run backwards on a phone but not on a desktop.
 
 On phones, viewport lines are measured against the full height of the screen, with the
-address bar hidden, and aren't measured again when the bar shows or hides. That keeps ranges
+address bar hidden, and aren't measured again when the bar shows or hides. That keeps triggers
 from moving while the reader scrolls. While the bar is showing, `vtop` is still exact, but
 `vcenter` is about half the bar's height below the visible centre, and `vbottom` is about one
 bar height below the visible bottom, just off screen. Where an exact line matters, prefer
 `vtop` or a percentage near the top.
 
-Ranges near the end of a page may never start or finish, because the page can't scroll far
+Triggers near the end of a page may never start or finish, because the page can't scroll far
 enough. The console says so. It depends on the screen size, so check at phone and desktop
 widths.
 
 ### Checking
 
 - Open the browser's console to see `Log()` and any warnings or errors, all marked `[Page]`.
-- Add `?scrolldebug` to the address to mark every range on the page.
-- A mistake in a range or an option is reported, and the default is used, so the rest of the
-  script still runs.
+- Add `?scrolldebug` to the address to mark the start and end of every trigger on the page.
+  Messages and markers name a trigger made with `Page.Trigger` by number, as in `Trigger #1`,
+  and a collection's triggers by member, as in `Key Point #2`.
+- A mistake in edges or an option is reported, and the default is used. A trigger with a bad
+  anchor is reported and never fires. Either way, the rest of the script still runs.
 
 ### Rules for scripts
 

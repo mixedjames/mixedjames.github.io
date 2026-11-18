@@ -32,6 +32,11 @@
 //
 //   Page.Element("Key Point").Log({ start: "etop vbottom", end: "ebottom vtop" });
 //
+// Pin() holds an element still on screen for a trigger's range, over the page, which scrolls
+// beneath it. It never pushes later content down:
+//
+//   Page.Element("Kidney Diagram").Pin(scene);
+//
 // The default edges are "etop vcenter" to "ebottom vcenter": while the middle of the viewport
 // is over the anchor.
 //
@@ -58,6 +63,9 @@ document.fonts.ready.then(() => ScrollTrigger.refresh());
 
 // word.lua writes each element's exact Word style name to this attribute.
 const STYLE = "data-word-style";
+
+// Marks an element this runtime pins. site.css styles it.
+const PINNED = "data-page-pin";
 
 // Writes to the console with a prefix, so messages from the runtime are easy to spot.
 const console_ = {
@@ -242,7 +250,9 @@ const AFTER = 2;
 //
 // Near the end of a page, a range may start or end beyond the furthest the page can scroll.
 // It then never starts, or never finishes, and warn() says so.
-function watch(label, ends, handlers, warn) {
+//
+// extra holds further ScrollTrigger options, such as the element to pin.
+function watch(label, ends, handlers, warn, extra = {}) {
   let state = BEFORE;
 
   const update = (value) => {
@@ -268,6 +278,7 @@ function watch(label, ends, handlers, warn) {
     end: ends.end.edges,
     markers: DEBUG,
     id: DEBUG ? label : undefined,
+    ...extra,
     onUpdate: (trigger) => update(trigger.progress),
     onRefresh: (trigger) => {
       const furthest = ScrollTrigger.maxScroll(window);
@@ -289,6 +300,11 @@ function watch(label, ends, handlers, warn) {
 
 let triggerCount = 0;
 
+// Read a trigger's ends and give its warnings, which are private to it. Set by Trigger's
+// static block, so they stay inside this module.
+let endsOf;
+let warnerOf;
+
 // A stretch of scrolling, from one anchor's edge crossing a viewport line to another's. An
 // inert trigger, whose ends couldn't be used, accepts every action and never fires; the
 // mistake was reported when it was made.
@@ -297,6 +313,11 @@ class Trigger {
   #ends;
   #own;
   #warned = new Set();
+
+  static {
+    endsOf = (trigger) => trigger.#ends;
+    warnerOf = (trigger) => (message) => trigger.#warn(message);
+  }
 
   // label names the trigger in messages. ends is from parseEnds(), or null for an inert
   // trigger. own is the collection member the trigger belongs to, if any: an end anchored on
@@ -406,6 +427,58 @@ class Collection {
       const own = { start: anchor(ends.start, member), end: anchor(ends.end, member) };
       return new Trigger(member.label, own, member);
     });
+  }
+
+  // Holds each member still on screen for its trigger's range: it stays where it was when the
+  // range started, over the page, which scrolls beneath it, and scrolls on with the page when
+  // the range ends. It never pushes later content down. Takes a trigger made by
+  // Page.Trigger(), or { start, end } as for Log().
+  //
+  // Only elements in a paragraph or table style can be pinned. A section is usually taller
+  // than the screen, and pinning one breaks the text column; a character style is part of a
+  // line of text. A trigger from Page.Trigger() can pin one element only, since several would
+  // be held on top of each other.
+  Pin(options = {}) {
+    let triggers;
+    if (options instanceof Trigger) {
+      if (this.#members.length > 1) {
+        const labels = this.#members.map((m) => m.label).join(", ");
+        console_.error(
+          `Pin(): one trigger can pin one element, but this collection has ` +
+            `${this.#members.length} (${labels}), so nothing is pinned. Narrow it with ` +
+            `Section(), or pass { start, end } to give each its own trigger`
+        );
+        return this;
+      }
+      triggers = this.#members.map(() => options);
+    } else {
+      triggers = this.#triggers("Pin", options);
+    }
+    triggers.forEach((trigger, i) => {
+      const member = this.#members[i];
+      const ends = endsOf(trigger);
+      if (!ends) {
+        return;
+      }
+      if (member.node.localName === "section" || member.node.localName === "span") {
+        const kind = member.node.localName === "section" ? "a section" : "a character style";
+        console_.error(
+          `Pin(): ${member.label} is ${kind}, which can't be pinned, so it isn't. ` +
+            `Pin an element in a paragraph style instead`
+        );
+        return;
+      }
+      // site.css makes a pinned element contain its children's margins. GSAP fixes its height,
+      // so margins that collapsed through it would otherwise be lost, moving what follows.
+      // Set before GSAP measures it.
+      member.node.setAttribute(PINNED, "");
+      const quiet = { enter() {}, leave() {}, progress() {} };
+      watch(`Pin ${member.label}`, ends, quiet, warnerOf(trigger), {
+        pin: member.node,
+        pinSpacing: false,
+      });
+    });
+    return this;
   }
 
   // Writes each member's progress through its trigger to the console. See Trigger.Log().
