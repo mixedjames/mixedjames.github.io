@@ -167,6 +167,13 @@ Progress runs from 0 at the start to 1 at the end. Jumping straight past a range
 a fast flick, still reports enter, progress and leave, in that order. A range that ends where
 it starts, or before, is a single point, and the console warns.
 
+On phones, viewport lines are measured against the full height of the screen, with the
+address bar hidden, and aren't measured again when the bar shows or hides. That keeps ranges
+from moving while the reader scrolls. While the bar is showing, `vtop` is still exact, but
+`vcenter` is about half the bar's height below the visible centre, and `vbottom` is about one
+bar height below the visible bottom, just off screen. Where an exact line matters, prefer
+`vtop` or a percentage near the top.
+
 Ranges near the end of a page may never start or finish, because the page can't scroll far
 enough. The console says so. It depends on the screen size, so check at phone and desktop
 widths.

@@ -174,6 +174,14 @@ Open issues:
   `end - start < 1`. Ranges near the end of a page may never start or finish, because the
   page can't scroll far enough; the runtime warns. Test sequences on a page long enough for
   every range to finish.
+- **Address bar on phones:** ScrollTrigger measures the viewport from a hidden `100vh` element
+  (the tall viewport, with the bar hidden). On touch devices it ignores resizes caused by the
+  bar (`ignoreMobileResize`), unless the height changes by more than 25%. So `v` lines sit
+  lower than the visible area while the bar shows: `vtop` exact, `vcenter` about half a bar
+  low, `vbottom` about a bar low. In `?scrolldebug`, the fixed viewport markers move as the
+  bar shows and hides, but the element markers don't. Triggers still fire where the markers
+  meet. The user chose this default for stability (November 2026). Re-measuring on each bar
+  change would make pinned content jump, and `normalizeScroll` changes how scrolling feels.
 - **Positioned elements in scroll wrappers:** an absolutely positioned element inside an
   `overflow-x: auto` wrapper escapes it unless the wrapper is positioned.
 - **Word temporary files:** `~$*` and `~WRL*.tmp` are git-ignored and must never trigger builds.
@@ -213,8 +221,8 @@ Open issues:
 5. **Scrollytelling (in progress):**
    - Done: style names in the filter, the `Page` runtime, private GSAP, ranges and `Log()`.
    - Next: `Pin()`, using GSAP's pinning. Show the user design options first.
-   - Still to do: check ranges on an iPhone, where the address bar changes the viewport
-     height. Use `?scrolldebug`.
+   - Checked on Android: ranges stay put as the address bar shows and hides (see the gotcha).
+     iPhone is unchecked, because the user has no iPhone. It is expected to behave the same.
    - Open: ranges near the end of a page may never finish. Extra space at the end of the page
      is a possible fix, and a design decision for the user.
 6. **Later:** contents pages.

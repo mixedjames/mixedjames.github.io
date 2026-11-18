@@ -12,15 +12,28 @@
 // runs to the end. Actions apply to each member of a collection separately, and return the
 // same collection so they can be chained.
 //
-// Actions that follow scrolling take a range. Each end of the range pairs an edge of the
-// element (e) with a line across the viewport (v), in either order:
+// Actions that follow scrolling use a trigger: a stretch of scrolling with a start and an end.
+// Each end pairs an edge of an anchor element (e) with a line across the viewport (v), in
+// either order:
+//
+//   const scene = Page.Trigger({
+//     start: { anchor: Page.Element("Kidney Diagram"), edges: "etop vtop" },
+//     end: { anchor: Page.Section("Kidney Scene"), edges: "ebottom vbottom" },
+//   });
+//   scene.Log();
+//
+// That trigger starts when the diagram's top reaches the top of the viewport, and ends when
+// the scene's bottom reaches the bottom. Edges and lines are top, center, bottom or a
+// percentage, such as e25% or v80%. An anchor must be a lookup that found exactly one element.
+// Anything else is an error, and the trigger never fires, so the rest of the script still runs.
+//
+// Actions on a collection take the same shape, but the anchor is optional and defaults to each
+// member in turn. A string is short for { edges: ... }:
 //
 //   Page.Element("Key Point").Log({ start: "etop vbottom", end: "ebottom vtop" });
 //
-// That range starts when the element's top reaches the bottom of the viewport, and ends when
-// its bottom reaches the top. Edges and lines are top, center, bottom or a percentage, such as
-// e25% or v80%. The default is { start: "etop vcenter", end: "ebottom vcenter" }: the range
-// in which the middle of the viewport is over the element.
+// The default edges are "etop vcenter" to "ebottom vcenter": while the middle of the viewport
+// is over the anchor.
 //
 // Add ?scrolldebug to the address to mark every range on the page.
 //
@@ -99,14 +112,15 @@ function membersNamed(name, sections) {
     .map((node, index) => new Member(node, index + 1));
 }
 
-// Ranges
+// Trigger ends
 
-const DEFAULT_RANGE = Object.freeze({ start: "etop vcenter", end: "ebottom vcenter" });
+const DEFAULT_EDGES = Object.freeze({ start: "etop vcenter", end: "ebottom vcenter" });
 const POINT_WORD = /^([ev])(top|center|bottom|\d+(?:\.\d+)?%)$/;
+const END_KEYS = ["anchor", "edges"];
 
-// Turns one end of a range, such as "etop vbottom", into ScrollTrigger's form, "top bottom":
-// the element's edge, then the viewport's. Returns null if it isn't one e word and one v word.
-function parsePoint(text) {
+// Turns edges such as "etop vbottom" into ScrollTrigger's form, "top bottom": the element's
+// edge, then the viewport's. Returns null if they aren't one e word and one v word.
+function parseEdges(text) {
   if (typeof text !== "string") {
     return null;
   }
@@ -121,34 +135,93 @@ function parsePoint(text) {
   return point.e && point.v ? `${point.e} ${point.v}` : null;
 }
 
-// Reads the range from an action's options. Mistakes are reported, and the default is used
-// for that end, so the rest of the page script still runs.
-function parseRange(action, options) {
-  if (options === null || typeof options !== "object") {
-    console_.error(`${action}() takes options such as { start: "etop vbottom" }; using the defaults`);
+// Reads one end of a trigger: a string of edges, or { anchor, edges }. Returns
+//
+//   { member, edges, text }   member: the anchor, or null to use the collection's member
+//                             edges: in ScrollTrigger's form; text: the page's own words
+//
+// or null if the end can't be used, which makes the trigger inert. who names the trigger or
+// action in messages. anchored says whether an anchor is required, as it is in Page.Trigger().
+function parseEnd(who, which, value, anchored) {
+  if (value === undefined || typeof value === "string") {
+    value = { edges: value };
+  } else if (value instanceof Collection) {
+    console_.error(
+      `${who}: ${which} takes { anchor, edges }, not a lookup on its own, such as ` +
+        `{ anchor: Page.Element("Key Point"), edges: "etop vbottom" }, so it never fires`
+    );
+    return null;
+  } else if (value === null || typeof value !== "object") {
+    console_.error(
+      `${who}: ${which} takes edges such as "etop vbottom", or { anchor, edges }, so it never fires`
+    );
+    return null;
+  }
+  for (const key of Object.keys(value)) {
+    if (!END_KEYS.includes(key)) {
+      console_.warn(`${who}: unknown option ${JSON.stringify(key)} in ${which}, ignored`);
+    }
+  }
+
+  let member = null;
+  if (value.anchor === undefined) {
+    if (anchored) {
+      console_.error(
+        `${who}: ${which} needs an anchor, such as { anchor: Page.Element("Key Point") }, ` +
+          `so it never fires`
+      );
+      return null;
+    }
+  } else if (!(value.anchor instanceof Collection)) {
+    console_.error(
+      `${who}: the ${which} anchor must be a lookup, such as Page.Element("Key Point"), ` +
+        `so it never fires`
+    );
+    return null;
+  } else {
+    const members = membersOf(value.anchor);
+    if (members.length !== 1) {
+      const found =
+        members.length === 0
+          ? "found nothing"
+          : `found ${members.length} elements (${members.map((m) => m.label).join(", ")}); ` +
+            `narrow it with Section()`;
+      console_.error(
+        `${who}: the ${which} anchor must be one element, but ${found}, so it never fires`
+      );
+      return null;
+    }
+    member = members[0];
+  }
+
+  let text = value.edges ?? DEFAULT_EDGES[which];
+  let edges = parseEdges(text);
+  if (!edges) {
+    console_.error(
+      `${who}: ${which} edges ${JSON.stringify(text)} need one element edge and one viewport ` +
+        `line, such as "etop vbottom"; using the default ${JSON.stringify(DEFAULT_EDGES[which])}`
+    );
+    text = DEFAULT_EDGES[which];
+    edges = parseEdges(text);
+  }
+  return { member, edges, text };
+}
+
+// Reads both ends of a trigger from an action's options. Returns { start, end }, or null if
+// either end can't be used. Both ends are read first, so every mistake is reported at once.
+function parseEnds(who, options, anchored) {
+  if (options === null || typeof options !== "object" || options instanceof Collection) {
+    console_.error(`${who}: takes options such as { start: ..., end: ... }`);
     options = {};
   }
   for (const key of Object.keys(options)) {
-    if (!(key in DEFAULT_RANGE)) {
-      console_.warn(`${action}(): unknown option ${JSON.stringify(key)}, ignored`);
+    if (!(key in DEFAULT_EDGES)) {
+      console_.warn(`${who}: unknown option ${JSON.stringify(key)}, ignored`);
     }
   }
-  // start and end are in ScrollTrigger's form; text keeps the page's own words, for messages.
-  const range = { text: {} };
-  for (const end of ["start", "end"]) {
-    let text = options[end] ?? DEFAULT_RANGE[end];
-    range[end] = parsePoint(text);
-    if (!range[end]) {
-      console_.error(
-        `${action}(): ${end} ${JSON.stringify(text)} needs one element edge and one viewport ` +
-          `line, such as "etop vbottom"; using the default ${JSON.stringify(DEFAULT_RANGE[end])}`
-      );
-      text = DEFAULT_RANGE[end];
-      range[end] = parsePoint(text);
-    }
-    range.text[end] = text;
-  }
-  return range;
+  const start = parseEnd(who, "start", options.start, anchored);
+  const end = parseEnd(who, "end", options.end, anchored);
+  return start && end ? { start, end } : null;
 }
 
 // Watching
@@ -157,27 +230,20 @@ const BEFORE = 0;
 const ACTIVE = 1;
 const AFTER = 2;
 
-// Follows one member through a range and calls the handlers:
+// Follows the reader through a trigger's range and calls the handlers:
 //
 //   enter(direction), leave(direction)   direction is "down" or "up"
 //   progress(value)                      from 0 at the start of the range to 1 at the end
 //
-// The member is before, in or after its range. Events are worked out from the change in
+// The reader is before, in or after the range. Events are worked out from the change in
 // state, so a jump straight past the range, by a link or a fast flick, still reports enter,
 // progress and leave, in that order. A range that ends where it starts, or before, is a
 // single point: crossing it reports all three at once.
 //
 // Near the end of a page, a range may start or end beyond the furthest the page can scroll.
-// It then never starts, or never finishes, and the console says so.
-function watch(member, range, handlers) {
+// It then never starts, or never finishes, and warn() says so.
+function watch(label, ends, handlers, warn) {
   let state = BEFORE;
-  const warned = new Set();
-  const warnOnce = (message) => {
-    if (!warned.has(message)) {
-      warned.add(message);
-      console_.warn(`${member.label}: ${message}`);
-    }
-  };
 
   const update = (value) => {
     const next = value <= 0 ? BEFORE : value >= 1 ? AFTER : ACTIVE;
@@ -196,30 +262,114 @@ function watch(member, range, handlers) {
   };
 
   ScrollTrigger.create({
-    trigger: member.node,
-    start: range.start,
-    end: range.end,
+    trigger: ends.start.member.node,
+    start: ends.start.edges,
+    endTrigger: ends.end.member.node,
+    end: ends.end.edges,
     markers: DEBUG,
-    id: DEBUG ? member.label : undefined,
+    id: DEBUG ? label : undefined,
     onUpdate: (trigger) => update(trigger.progress),
     onRefresh: (trigger) => {
       const furthest = ScrollTrigger.maxScroll(window);
       // ScrollTrigger moves the end of a backwards range to a hundredth of a pixel past its start.
       if (trigger.end - trigger.start < 1) {
-        warnOnce("the range ends where it starts, so it is a single point");
+        warn("the range ends where it starts, or before, so it is a single point");
       }
       if (trigger.start > furthest) {
-        warnOnce("the page ends before the range starts, so it never starts at this size");
+        warn("the page ends before the range starts, so it never starts at this size");
       } else if (trigger.end > furthest) {
-        warnOnce("the page ends before the range ends, so it never finishes at this size");
+        warn("the page ends before the range ends, so it never finishes at this size");
       }
       update(trigger.progress);
     },
   });
 }
 
+// Triggers
+
+let triggerCount = 0;
+
+// A stretch of scrolling, from one anchor's edge crossing a viewport line to another's. An
+// inert trigger, whose ends couldn't be used, accepts every action and never fires; the
+// mistake was reported when it was made.
+class Trigger {
+  #label;
+  #ends;
+  #own;
+  #warned = new Set();
+
+  // label names the trigger in messages. ends is from parseEnds(), or null for an inert
+  // trigger. own is the collection member the trigger belongs to, if any: an end anchored on
+  // it isn't named again in messages.
+  constructor(label, ends, own = null) {
+    this.#label = label;
+    this.#ends = ends;
+    this.#own = own;
+    Object.freeze(this);
+  }
+
+  // Warns once about each problem, however many actions use the trigger.
+  #warn(message) {
+    if (!this.#warned.has(message)) {
+      this.#warned.add(message);
+      console_.warn(`${this.#label}: ${message}`);
+    }
+  }
+
+  // Describes one end for messages, as in "etop vtop" of Kidney Diagram #1.
+  #describe(end) {
+    const text = JSON.stringify(end.text);
+    return end.member === this.#own ? text : `${text} of ${end.member.label}`;
+  }
+
+  // Writes the reader's progress through the range to the console: when it enters and
+  // leaves, which way the reader was scrolling, and its progress in tenths.
+  Log() {
+    if (!this.#ends) {
+      return this;
+    }
+    const { start, end } = this.#ends;
+    const nodes = [start.member.node];
+    if (end.member !== start.member) {
+      nodes.push(end.member.node);
+    }
+    console_.log(
+      `Log: ${this.#label}, from ${this.#describe(start)} to ${this.#describe(end)}`,
+      ...nodes
+    );
+    let tenths = null;
+    watch(
+      this.#label,
+      this.#ends,
+      {
+        enter: (direction) => console_.log(`${this.#label}: enter, scrolling ${direction}`),
+        leave: (direction) => console_.log(`${this.#label}: leave, scrolling ${direction}`),
+        progress: (value) => {
+          const now = Math.floor(value * 10);
+          if (now !== tenths) {
+            tenths = now;
+            console_.log(`${this.#label}: progress ${(now / 10).toFixed(1)}`);
+          }
+        },
+      },
+      (message) => this.#warn(message)
+    );
+    return this;
+  }
+}
+
+// Collections
+
+// Reads a collection's members, which are private to it. Set by Collection's static block,
+// so it stays inside this module.
+let membersOf;
+
 class Collection {
   #members;
+
+  static {
+    membersOf = (collection) => collection.#members;
+  }
 
   constructor(members) {
     this.#members = Object.freeze(members);
@@ -241,30 +391,27 @@ class Collection {
     return find("Section", name, true, this.#members);
   }
 
-  // Writes each member's progress through a range to the console: when it enters and
-  // leaves, which way the reader was scrolling, and its progress in tenths.
-  Log(options = {}) {
-    const range = parseRange("Log", options);
-    if (this.#members.length === 0) {
-      console_.log("Log: nothing to log");
+  // Gives each member its own trigger, anchored on the member unless an end names another
+  // anchor, and returns the triggers. Returns none if the options can't be used.
+  #triggers(action, options) {
+    const ends = parseEnds(`${action}()`, options, false);
+    if (!ends) {
+      return [];
     }
-    for (const member of this.#members) {
-      console_.log(
-        `Log: ${member.label}, from "${range.text.start}" to "${range.text.end}"`,
-        member.node
-      );
-      let tenths = null;
-      watch(member, range, {
-        enter: (direction) => console_.log(`${member.label}: enter, scrolling ${direction}`),
-        leave: (direction) => console_.log(`${member.label}: leave, scrolling ${direction}`),
-        progress: (value) => {
-          const now = Math.floor(value * 10);
-          if (now !== tenths) {
-            tenths = now;
-            console_.log(`${member.label}: progress ${(now / 10).toFixed(1)}`);
-          }
-        },
-      });
+    if (this.#members.length === 0) {
+      console_.log(`${action}: nothing to ${action.toLowerCase()}`);
+    }
+    const anchor = (end, member) => ({ ...end, member: end.member ?? member });
+    return this.#members.map((member) => {
+      const own = { start: anchor(ends.start, member), end: anchor(ends.end, member) };
+      return new Trigger(member.label, own, member);
+    });
+  }
+
+  // Writes each member's progress through its trigger to the console. See Trigger.Log().
+  Log(options = {}) {
+    for (const trigger of this.#triggers("Log", options)) {
+      trigger.Log();
     }
     return this;
   }
@@ -303,7 +450,15 @@ function lookup(method, name, sections) {
   return found;
 }
 
+// A trigger with an anchor on each end. Triggers are numbered in the order the script makes
+// them, as in "Trigger #1", to name them in messages.
+function makeTrigger(options) {
+  const label = `Trigger #${++triggerCount}`;
+  return new Trigger(label, parseEnds(label, options, true));
+}
+
 window.Page = Object.freeze({
   Element: (name) => lookup("Element", name, false),
   Section: (name) => lookup("Section", name, true),
+  Trigger: makeTrigger,
 });
