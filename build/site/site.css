@@ -416,12 +416,18 @@ math {
    so its background hides the text passing under it. flow-root keeps its children's margins
    inside it: GSAP fixes the pin's height, so margins that collapsed through it would otherwise
    be lost and move the content after it. z-index keeps it above positioned elements later in
-   the page, such as the scroll wrappers around tables. */
+   the page, such as the scroll wrappers around tables.
+
+   The shadow extends the background by 1px on every side. GSAP rounds a pin's start and height
+   to whole pixels, so a pin can sit up to 1px short of the screen edge it is aligned to, leaving
+   a hairline through which the page shows. The shadow covers it without changing the layout or
+   anything GSAP measures. */
 
 [data-page-pin] {
   display: flow-root;
   z-index: 1;
   background: var(--paper);
+  box-shadow: 0 0 0 1px var(--paper);
 }
 
 /* Home page */
